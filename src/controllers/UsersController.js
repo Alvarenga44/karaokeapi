@@ -28,7 +28,7 @@ module.exports = {
   async show(req, res) {
     try {
       const {id} = req.params;
-      const users = await Users.findByPk(id);
+      const users = await Users.findByPk(id, {include: { all: true }});
 
       return res.status(200).json(users)
     } catch (error) {
@@ -43,6 +43,7 @@ module.exports = {
 
   async store(req, res) {
     try {
+      const { company_id, role_id } = req.headers;
       const { 
         name,
         email,
@@ -50,11 +51,13 @@ module.exports = {
       } = req.body;  
 
       const [users, created] = await Users.findOrCreate({
-        where: { cnpj },
+        where: { email },
         defaults: {
           name,
           email,
           password,
+          company_id,
+          role_id,
           active: 1
         }
        });
@@ -79,19 +82,21 @@ module.exports = {
     try {
       const {id} = req.params;
       const { 
-        cnpj,
-        company_name,
-        fantasy_name,
+        name,
+        email,
+        password,
         active,
-        img_url,
+        role_id,
+        company_id
       } = req.body;
 
       const users = await Users.update({
-        cnpj,
-        company_name,
-        fantasy_name,
+        name,
+        email,
+        password,
         active,
-        img_url,
+        role_id,
+        company_id
       }, {where: {
         id
       }});
