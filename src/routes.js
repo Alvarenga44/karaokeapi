@@ -19,7 +19,7 @@ routes.get('/', (req, res) => {
 
 routes.post('/v1/auth', AuthController.store);
 
-// Roles
+// Auth Routes
 routes.get('/v1/roles', auth, RolesController.index);
 routes.get('/v1/roles/:id', auth, RolesController.show);
 routes.post('/v1/roles', auth, RolesController.create);
