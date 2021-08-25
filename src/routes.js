@@ -4,6 +4,7 @@ const AuthController = require('./controllers/AuthController');
 const RolesController = require('./controllers/RolesController');
 const MasterCompanyController = require('./controllers/MasterCompanyController');
 const UsersController = require('./controllers/UsersController');
+const CategoriesController = require('./controllers/CategoriesController');
 
 const auth = require('./middleware/auth');
 
@@ -37,5 +38,12 @@ routes.get('/v1/users/:id', auth, UsersController.show);
 routes.post('/v1/users', auth, UsersController.store);
 routes.put('/v1/users/:id', auth, UsersController.update);
 routes.delete('/v1/users/:id', auth, UsersController.delete);
+
+// Categories
+routes.get('/v1/categories', auth, CategoriesController.index);
+routes.get('/v1/categories/:id', auth, CategoriesController.show);
+routes.post('/v1/categories', auth, CategoriesController.store);
+routes.put('/v1/categories/:id', auth, CategoriesController.update);
+routes.delete('/v1/categories/:id', auth, CategoriesController.delete);
 
 module.exports = routes;

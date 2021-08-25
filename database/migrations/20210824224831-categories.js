@@ -18,12 +18,12 @@ module.exports = {
         onDelete: 'CASCADE'
       },
       title: {
-        type: Sequelize.INTEGER,
+        type: Sequelize.STRING,
         allowNull: false,
       },
       subtitle: {
         type: Sequelize.STRING,
-        allowNull: false,
+        allowNull: true,
       },
       active: {
         type: Sequelize.BOOLEAN,

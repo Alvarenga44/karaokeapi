@@ -1,5 +1,4 @@
 const MasterCompany = require('../models/MasterCompany');
-const Users = require('../models/Users');
 
 module.exports = {
   async index(req, res) {
