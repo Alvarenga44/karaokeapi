@@ -1,6 +1,7 @@
 const Sequelize = require('sequelize');
 const dbConfig = require('../config/database');
 
+const Tokens = require('../src/models/Tokens')
 const Roles = require('../src/models/Roles');
 const MasterCompany = require('../src/models/MasterCompany');
 const Users = require('../src/models/Users');
@@ -10,6 +11,7 @@ const ImageProducts = require('../src/models/ImageProducts');
 
 const connection = new Sequelize(dbConfig);
 
+Tokens.init(connection);
 Roles.init(connection);
 MasterCompany.init(connection);
 Users.init(connection);
