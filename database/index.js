@@ -23,5 +23,6 @@ Roles.associate(connection.models);
 MasterCompany.associate(connection.models);
 Users.associate(connection.models);
 Categories.associate(connection.models);
+Products.associate(connection.models);
 
 module.exports = connection;

@@ -1,25 +1,25 @@
-const Categories = require('../models/Categories');
+const Products = require('../models/Products');
 
 module.exports = {
   async index(req, res) {
     try {
-      const categories = await Categories.findAndCountAll({where: {active: 1},
+      const products = await Products.findAndCountAll({where: {active: 1},
         include: [
           {
-            association: 'company'
+            all: true
           }
         ]
       });
 
       return res.status(200).json({
-        categories
+        products
       })
     } catch (error) {
       console.log(error)
       let e = [];
       e.push(error);
       return res.status(500).json({
-        title: 'Falha ao inserir categoria, tente novamente',
+        title: 'Falha ao inserir produtos, tente novamente',
         e
       })
     }
@@ -28,7 +28,7 @@ module.exports = {
   async show(req, res) {
     try {
       const {id} = req.params;
-      const categories = await Categories.findOne({id}, {
+      const products = await Products.findOne({id}, {
         include: [
           {
             all: true
@@ -36,12 +36,12 @@ module.exports = {
         ]
       });
 
-      return res.status(200).json(categories)
+      return res.status(200).json(products)
     } catch (error) {
       let e = [];
       e.push(error);
       return res.status(500).json({
-        title: 'Falha ao inserir categoria, tente novamente',
+        title: 'Falha ao inserir produtos, tente novamente',
         e
       })
     }
@@ -49,33 +49,34 @@ module.exports = {
 
   async store(req, res) {
     try {
-      const { company_id } = req.headers;
+      const { company_id, category_id } = req.headers;
       const { 
         title,
         subtitle,
       } = req.body;  
 
-      const [categories, created] = await Categories.findOrCreate({
+      const [products, created] = await Products.findOrCreate({
         where: { title },
         defaults: {
           title,
           subtitle,
           company_id,
+          category_id,
           active: 1
         }
        });
 
       return res.status(201).json({
-        title: 'Categoria cadastrada com sucesso',
+        title: 'Produtos cadastrada com sucesso',
         created,
-        categories
+        products
       })
     } catch (error) {
       console.log(error)
       let e = [];
       e.push(error);
       return res.status(500).json({
-        title: 'Falha ao inserir categoria, tente novamente',
+        title: 'Falha ao inserir produtos, tente novamente',
         e
       })
     }
@@ -88,25 +89,27 @@ module.exports = {
         title,
         subtitle,
         company_id,
-        active,
+        category_id,
+        active
       } = req.body;
 
-      const categories = await Categories.update({
+      const products = await Products.update({
         title,
         subtitle,
         company_id,
-        active,
+        category_id,
+        active
       }, {where: {
         id
       }});
 
-      return res.status(200).json({msg: 'Categoria atualizado com sucesso', categories})
+      return res.status(200).json({msg: 'Produtos atualizado com sucesso', products})
     } catch (error) {
       console.log(error)
       let e = [];
       e.push(error);
       return res.status(500).json({
-        title: 'Falha ao inserir categoria, tente novamente',
+        title: 'Falha ao inserir produtos, tente novamente',
         e
       })
     }
@@ -115,14 +118,14 @@ module.exports = {
   async delete(req, res) {
     try {
       const {id} = req.params;
-      const categories = await Categories.destroy({where: {id}});
+      const products = await Products.destroy({where: {id}});
 
-      return res.status(200).json({msg: 'Categoria deletado com sucesso', categories})
+      return res.status(200).json({msg: 'Produtos deletado com sucesso', products})
     } catch (error) {
       let e = [];
       e.push(error);
       return res.status(500).json({
-        title: 'Falha ao inserir categoria, tente novamente',
+        title: 'Falha ao inserir produtos, tente novamente',
         e
       })
     }
