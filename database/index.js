@@ -17,4 +17,8 @@ Categories.init(connection);
 Products.init(connection);
 ImageProducts.init(connection);
 
+Roles.associate(connection.models);
+MasterCompany.associate(connection.models);
+Users.associate(connection.models);
+
 module.exports = connection;
