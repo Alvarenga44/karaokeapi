@@ -2,11 +2,12 @@ const Categories = require('../models/Categories');
 
 module.exports = {
   async index(req, res) {
+    const { company_id } = req.headers;
     try {
-      const categories = await Categories.findAndCountAll({where: {active: 1},
+      const categories = await Categories.findAndCountAll({where: {active: 1, company_id},
         include: [
           {
-            association: 'company'
+            all: true
           }
         ]
       });
@@ -19,7 +20,7 @@ module.exports = {
       let e = [];
       e.push(error);
       return res.status(500).json({
-        title: 'Falha ao inserir categoria, tente novamente',
+        title: 'Falha ao listar categoria, tente novamente',
         e
       })
     }
