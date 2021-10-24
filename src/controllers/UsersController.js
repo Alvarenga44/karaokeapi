@@ -1,9 +1,11 @@
 const Users = require('../models/Users');
+const Roles = require('../models/Roles');
 
 module.exports = {
   async index(req, res) {
     try {
-      const users = await Users.findAndCountAll({where: {active: 1},
+      const users = await Users.findAndCountAll({
+        where: { active: 1 },
         include: [
           {
             all: true
@@ -27,8 +29,8 @@ module.exports = {
 
   async show(req, res) {
     try {
-      const {id} = req.params;
-      const users = await Users.findByPk(id, {include: { all: true }});
+      const { id } = req.params;
+      const users = await Users.findByPk(id, { include: { all: true } });
 
       return res.status(200).json(users)
     } catch (error) {
@@ -44,11 +46,33 @@ module.exports = {
   async store(req, res) {
     try {
       const { company_id, role_id } = req.headers;
-      const { 
+      const {
         name,
         email,
         password
-      } = req.body;  
+      } = req.body;
+
+      const role = await Roles.findByPk(role_id);
+
+      if (role.name === 'admin') {
+        const [users, created] = await Users.findOrCreate({
+          where: { email },
+          defaults: {
+            name,
+            email,
+            password,
+            company_id: 0,
+            role_id,
+            active: 1
+          }
+        });
+
+        return res.status(201).json({
+          title: 'Administrador cadastrada com sucesso',
+          created,
+          users
+        })
+      }
 
       const [users, created] = await Users.findOrCreate({
         where: { email },
@@ -56,17 +80,19 @@ module.exports = {
           name,
           email,
           password,
-          company_id,
+          company_id: 0,
           role_id,
           active: 1
         }
-       });
+      });
 
       return res.status(201).json({
         title: 'Usuário cadastrada com sucesso',
         created,
         users
       })
+
+
     } catch (error) {
       console.log(error)
       let e = [];
@@ -80,8 +106,8 @@ module.exports = {
 
   async update(req, res) {
     try {
-      const {id} = req.params;
-      const { 
+      const { id } = req.params;
+      const {
         name,
         email,
         password,
@@ -97,11 +123,13 @@ module.exports = {
         active,
         role_id,
         company_id
-      }, {where: {
-        id
-      }});
+      }, {
+        where: {
+          id
+        }
+      });
 
-      return res.status(200).json({msg: 'Usuário atualizado com sucesso', users})
+      return res.status(200).json({ msg: 'Usuário atualizado com sucesso', users })
     } catch (error) {
       console.log(error)
       let e = [];
@@ -115,10 +143,10 @@ module.exports = {
 
   async delete(req, res) {
     try {
-      const {id} = req.params;
-      const users = await Users.destroy({where: {id}});
+      const { id } = req.params;
+      const users = await Users.destroy({ where: { id } });
 
-      return res.status(200).json({msg: 'Usuário deletado com sucesso', users})
+      return res.status(200).json({ msg: 'Usuário deletado com sucesso', users })
     } catch (error) {
       let e = [];
       e.push(error);
