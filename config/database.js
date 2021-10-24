@@ -2,7 +2,7 @@ module.exports = {
   dialect: 'mysql',
   host: 'localhost',
   username: 'root',
-  password: 'arena200',
+  password: '',
   database: 'digitalmenu',
   define: {
     timestamps: true,
