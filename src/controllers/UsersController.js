@@ -1,5 +1,4 @@
 const Users = require('../models/Users');
-const Roles = require('../models/Roles');
 
 module.exports = {
   async index(req, res) {
@@ -52,35 +51,13 @@ module.exports = {
         password
       } = req.body;
 
-      const role = await Roles.findByPk(role_id);
-
-      if (role.name === 'admin') {
-        const [users, created] = await Users.findOrCreate({
-          where: { email },
-          defaults: {
-            name,
-            email,
-            password,
-            company_id: 0,
-            role_id,
-            active: 1
-          }
-        });
-
-        return res.status(201).json({
-          title: 'Administrador cadastrada com sucesso',
-          created,
-          users
-        })
-      }
-
       const [users, created] = await Users.findOrCreate({
         where: { email },
         defaults: {
           name,
           email,
           password,
-          company_id: 0,
+          company_id,
           role_id,
           active: 1
         }
@@ -91,8 +68,6 @@ module.exports = {
         created,
         users
       })
-
-
     } catch (error) {
       console.log(error)
       let e = [];
