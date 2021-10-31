@@ -3,7 +3,8 @@ const Products = require('../models/Products');
 module.exports = {
   async index(req, res) {
     try {
-      const products = await Products.findAndCountAll({where: {active: 1},
+      const products = await Products.findAndCountAll({
+        where: { active: 1 },
         include: [
           {
             all: true
@@ -27,8 +28,8 @@ module.exports = {
 
   async show(req, res) {
     try {
-      const {id} = req.params;
-      const products = await Products.findOne({id}, {
+      const { id } = req.params;
+      const products = await Products.findOne({ id }, {
         include: [
           {
             all: true
@@ -50,21 +51,27 @@ module.exports = {
   async store(req, res) {
     try {
       const { company_id, category_id } = req.headers;
-      const { 
+      const {
         title,
         subtitle,
-      } = req.body;  
+        price_value,
+        available_quantity,
+        small_quantity,
+      } = req.body;
 
       const [products, created] = await Products.findOrCreate({
         where: { title },
         defaults: {
           title,
           subtitle,
+          price_value,
+          available_quantity,
+          small_quantity,
           company_id,
           category_id,
           active: 1
         }
-       });
+      });
 
       return res.status(201).json({
         title: 'Produtos cadastrada com sucesso',
@@ -85,7 +92,7 @@ module.exports = {
   async update(req, res) {
     try {
       const { id } = req.params;
-      const { 
+      const {
         title,
         subtitle,
         company_id,
@@ -99,11 +106,13 @@ module.exports = {
         company_id,
         category_id,
         active
-      }, {where: {
-        id
-      }});
+      }, {
+        where: {
+          id
+        }
+      });
 
-      return res.status(200).json({msg: 'Produtos atualizado com sucesso', products})
+      return res.status(200).json({ msg: 'Produtos atualizado com sucesso', products })
     } catch (error) {
       console.log(error)
       let e = [];
@@ -117,10 +126,10 @@ module.exports = {
 
   async delete(req, res) {
     try {
-      const {id} = req.params;
-      const products = await Products.destroy({where: {id}});
+      const { id } = req.params;
+      const products = await Products.destroy({ where: { id } });
 
-      return res.status(200).json({msg: 'Produtos deletado com sucesso', products})
+      return res.status(200).json({ msg: 'Produtos deletado com sucesso', products })
     } catch (error) {
       let e = [];
       e.push(error);

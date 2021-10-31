@@ -2,8 +2,8 @@
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
- 
-    return await queryInterface.createTable('products', { 
+
+    return await queryInterface.createTable('products', {
       id: {
         type: Sequelize.INTEGER,
         primaryKey: true,
@@ -32,6 +32,18 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: true,
       },
+      price_value: {
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
+      available_quantity: {
+        type: Sequelize.INTEGER,
+        allowNull: true,
+      },
+      small_quantity: {
+        type: Sequelize.INTEGER,
+        allowNull: true,
+      },
       active: {
         type: Sequelize.BOOLEAN,
         allowNull: false,
@@ -45,7 +57,7 @@ module.exports = {
         allowNull: false,
       }
     });
-     
+
   },
 
   down: async (queryInterface, Sequelize) => {

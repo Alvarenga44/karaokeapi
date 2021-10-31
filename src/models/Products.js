@@ -5,6 +5,9 @@ class Products extends Model {
     super.init({
       title: DataTypes.STRING,
       subtitle: DataTypes.STRING,
+      price_value: DataTypes.STRING,
+      available_quantity: DataTypes.INTEGER,
+      small_quantity: DataTypes.INTEGER,
       active: DataTypes.BOOLEAN,
     }, {
       sequelize

@@ -4,7 +4,8 @@ module.exports = {
   async index(req, res) {
     const { company_id } = req.headers;
     try {
-      const categories = await Categories.findAndCountAll({where: {active: 1, company_id},
+      const categories = await Categories.findAndCountAll({
+        where: { active: 1, company_id },
         include: [
           {
             all: true
@@ -28,8 +29,8 @@ module.exports = {
 
   async show(req, res) {
     try {
-      const {id} = req.params;
-      const categories = await Categories.findOne({id}, {
+      const { id } = req.params;
+      const categories = await Categories.findOne({ id }, {
         include: [
           {
             all: true
@@ -51,10 +52,10 @@ module.exports = {
   async store(req, res) {
     try {
       const { company_id } = req.headers;
-      const { 
+      const {
         title,
         subtitle,
-      } = req.body;  
+      } = req.body;
 
       const [categories, created] = await Categories.findOrCreate({
         where: { title },
@@ -64,7 +65,7 @@ module.exports = {
           company_id,
           active: 1
         }
-       });
+      });
 
       return res.status(201).json({
         title: 'Categoria cadastrada com sucesso',
@@ -85,7 +86,7 @@ module.exports = {
   async update(req, res) {
     try {
       const { id } = req.params;
-      const { 
+      const {
         title,
         subtitle,
         company_id,
@@ -97,11 +98,13 @@ module.exports = {
         subtitle,
         company_id,
         active,
-      }, {where: {
-        id
-      }});
+      }, {
+        where: {
+          id
+        }
+      });
 
-      return res.status(200).json({msg: 'Categoria atualizado com sucesso', categories})
+      return res.status(200).json({ msg: 'Categoria atualizado com sucesso', categories })
     } catch (error) {
       console.log(error)
       let e = [];
@@ -115,10 +118,10 @@ module.exports = {
 
   async delete(req, res) {
     try {
-      const {id} = req.params;
-      const categories = await Categories.destroy({where: {id}});
+      const { id } = req.params;
+      const categories = await Categories.destroy({ where: { id } });
 
-      return res.status(200).json({msg: 'Categoria deletado com sucesso', categories})
+      return res.status(200).json({ msg: 'Categoria deletado com sucesso', categories })
     } catch (error) {
       let e = [];
       e.push(error);
