@@ -3,8 +3,9 @@ const Products = require('../models/Products');
 module.exports = {
   async index(req, res) {
     try {
+      const { company_id } = req.headers;
       const products = await Products.findAndCountAll({
-        where: { active: 1 },
+        where: { company_id },
         include: [
           {
             all: true
