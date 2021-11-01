@@ -1,5 +1,6 @@
 const express = require('express');
 
+// Admin | Menagement Models
 const AuthController = require('./controllers/AuthController');
 const RolesController = require('./controllers/RolesController');
 const MasterCompanyController = require('./controllers/MasterCompanyController');
@@ -7,13 +8,22 @@ const UsersController = require('./controllers/UsersController');
 const CategoriesController = require('./controllers/CategoriesController');
 const ProductsController = require('./controllers/ProductsController');
 
+// Menu Digital Models
+
+const DigitalMenuController = require('./controllers/ClienteController/DigitalMenuController')
+
 const auth = require('./middleware/auth');
 
 const routes = express.Router();
 
 routes.get('/', (req, res) => {
-  return res.json({msg: 'API DigitalMenu Online'});
+  return res.json({ msg: 'API DigitalMenu Online' });
 });
+
+// MenuRoutes
+
+routes.get('/v1/digitalmenu', DigitalMenuController.index);
+
 
 // Auth
 
