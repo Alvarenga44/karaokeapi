@@ -5,7 +5,7 @@ module.exports = {
     const { company_id } = req.headers;
     try {
       const categories = await Categories.findAndCountAll({
-        where: { active: 1, company_id },
+        where: { company_id },
         include: [
           {
             all: true

@@ -8,21 +8,24 @@ module.exports = {
     try {
       const { email, password } = req.body;
 
-      const account = await Users.findOne({ email }, {include: [
-        {
-          all: true
-        }
-      ]});
+      console.log(email, password)
+      const account = await Users.findOne({ email }, {
+        include: [
+          {
+            all: true
+          }
+        ]
+      });
 
       if (!account || !bcrypt.compareSync(password, account.password)) {
-        return res.status(401).json({message: 'Os dados informados estão incorretos'});
+        return res.status(401).json({ message: 'Os dados informados estão incorretos' });
       } else {
         const token = jwt.sign({ userId: account.id, roles: account.roles, company: account.company }, `${authSecreat}`, { expiresIn: '24h' });
         return res.json({
           account,
           token
         })
-      } 
+      }
     } catch (error) {
       console.log(error);
       let e = [];
