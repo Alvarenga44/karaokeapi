@@ -22,7 +22,7 @@ routes.get('/', (req, res) => {
 
 // MenuRoutes
 
-routes.get('/v1/digitalmenu', DigitalMenuController.index);
+routes.get('/v1/digitalmenu/:id', DigitalMenuController.index);
 
 
 // Auth

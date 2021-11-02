@@ -4,8 +4,8 @@ const MasterCompany = require('../../models/MasterCompany');
 module.exports = {
   async index(req, res) {
     try {
-      const { cnpj } = req.headers;
-      const company = await MasterCompany.findOne({ cnpj });
+      const { id } = req.params;
+      const company = await MasterCompany.findByPk(id);
 
       if (!company) {
         return res.status(404).json({ msg: 'Empresa não encontrada' })
@@ -15,7 +15,7 @@ module.exports = {
         return res.status(404).json({ msg: 'Cardapio não disponível no momento.' })
       }
       const categories = await Categories.findAndCountAll({
-        where: { company_id: company.id },
+        where: { company_id: company.id, active: 1 },
         include: [
           {
             all: true
