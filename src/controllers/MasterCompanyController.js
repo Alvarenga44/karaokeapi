@@ -3,7 +3,8 @@ const MasterCompany = require('../models/MasterCompany');
 module.exports = {
   async index(req, res) {
     try {
-      const master_company = await MasterCompany.findAndCountAll({where: {active: 1},
+      const master_company = await MasterCompany.findAndCountAll({
+        where: { active: 1 },
         include: [
           {
             association: 'users'
@@ -27,7 +28,7 @@ module.exports = {
 
   async show(req, res) {
     try {
-      const {id} = req.params;
+      const { id } = req.params;
       const master_company = await MasterCompany.findByPk(id);
 
       return res.status(200).json(master_company)
@@ -43,12 +44,12 @@ module.exports = {
 
   async store(req, res) {
     try {
-      const { 
+      const {
         cnpj,
         company_name,
         fantasy_name,
         img_url,
-      } = req.body;  
+      } = req.body;
 
       const [master_company, created] = await MasterCompany.findOrCreate({
         where: { cnpj },
@@ -59,7 +60,7 @@ module.exports = {
           img_url,
           active: 1
         }
-       });
+      });
 
       return res.status(201).json({
         title: 'Empresa cadastrada com sucesso',
@@ -79,13 +80,13 @@ module.exports = {
 
   async update(req, res) {
     try {
-      const {id} = req.params;
-      const { 
+      const { location: url = '' } = req.file;
+      const { id } = req.params;
+      const {
         cnpj,
         company_name,
         fantasy_name,
         active,
-        img_url,
       } = req.body;
 
       const master_company = await MasterCompany.update({
@@ -93,12 +94,14 @@ module.exports = {
         company_name,
         fantasy_name,
         active,
-        img_url,
-      }, {where: {
-        id
-      }});
+        img_url: url,
+      }, {
+        where: {
+          id
+        }
+      });
 
-      return res.status(200).json({msg: 'Empresa atualizado com sucesso', master_company})
+      return res.status(200).json({ msg: 'Empresa atualizado com sucesso', master_company })
     } catch (error) {
       console.log(error)
       let e = [];
@@ -112,10 +115,10 @@ module.exports = {
 
   async delete(req, res) {
     try {
-      const {id} = req.params;
-      const master_company = await MasterCompany.destroy({where: {id}});
+      const { id } = req.params;
+      const master_company = await MasterCompany.destroy({ where: { id } });
 
-      return res.status(200).json({msg: 'Empresa deletado com sucesso', master_company})
+      return res.status(200).json({ msg: 'Empresa deletado com sucesso', master_company })
     } catch (error) {
       let e = [];
       e.push(error);

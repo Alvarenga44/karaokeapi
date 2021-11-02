@@ -1,5 +1,7 @@
 const express = require('express');
+const multer = require('multer')
 
+const multerConfig = require('./config/multer')
 // Admin | Menagement Models
 const AuthController = require('./controllers/AuthController');
 const RolesController = require('./controllers/RolesController');
@@ -40,7 +42,7 @@ routes.delete('/v1/roles/:id', auth, RolesController.delete);
 routes.get('/v1/mastercompanies', auth, MasterCompanyController.index);
 routes.get('/v1/mastercompanies/:id', auth, MasterCompanyController.show);
 routes.post('/v1/mastercompanies', auth, MasterCompanyController.store);
-routes.put('/v1/mastercompanies/:id', auth, MasterCompanyController.update);
+routes.put('/v1/mastercompanies/:id', auth, multer(multerConfig).single('file'), MasterCompanyController.update);
 routes.delete('/v1/mastercompanies/:id', auth, MasterCompanyController.delete);
 
 // Users
