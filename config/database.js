@@ -1,9 +1,11 @@
+require('dotenv').config()
 module.exports = {
+
   dialect: 'mysql',
-  host: 'localhost',
-  username: 'root',
-  password: '',
-  database: 'digitalmenu',
+  host: process.env.MYSQL_HOST,
+  username: process.env.MYSQL_USERNAME,
+  password: process.env.MYSQL_PASSWORD,
+  database: process.env.MYSQL_DB,
   define: {
     timestamps: true,
     underscored: true,
