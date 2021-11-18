@@ -7,15 +7,11 @@ module.exports = {
   async store(req, res) {
     try {
       const { email, password } = req.body;
-
+      let account = null;
       console.log(email, password)
-      const account = await Users.findOne({ email }, {
-        include: [
-          {
-            all: true
-          }
-        ]
-      });
+      const users = await Users.findAndCountAll();
+
+      account = users.rows.find(user => user.email === email);
 
       if (!account || !bcrypt.compareSync(password, account.password)) {
         return res.status(401).json({ message: 'Os dados informados estão incorretos' });
