@@ -4,7 +4,7 @@ class MasterCompany extends Model {
   static init(sequelize) {
     super.init({
       cnpj: DataTypes.INTEGER,
-      company_name:  DataTypes.STRING,
+      company_name: DataTypes.STRING,
       fantasy_name: DataTypes.STRING,
       active: DataTypes.BOOLEAN,
       img_url: DataTypes.STRING,
@@ -15,8 +15,7 @@ class MasterCompany extends Model {
 
   static associate(models) {
     this.hasMany(models.Users, { foreignKey: 'company_id', as: 'users' })
-    this.hasMany(models.Categories, { foreignKey: 'company_id', as: 'categories' })
-    this.hasMany(models.Products, { foreignKey: 'company_id', as: 'products' })
+    this.hasMany(models.Vehicle, { foreignKey: 'company_id', as: 'vehicles' })
   }
 }
 

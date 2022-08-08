@@ -7,10 +7,11 @@ module.exports = {
       {
         name: 'Francisco Alvarenga',
         email: 'franciscocarlos002@outlook.com',
-        password: "$2a$12$Np49tcMjM1F7Jq2ADDO6Geb7SK79iqJGOx3mmwsYROswz17fSyg26",
+        password: "$2a$12$1VKKiNUD20/J1BI82c.Td.7wsUloMNhghA6h35SGE8KhtP.zL9qDy",
         role_id: 1,
         company_id: 1,
         active: 1,
+        is_driver: 1,
         created_at: new Date(),
         updated_at: new Date()
       },

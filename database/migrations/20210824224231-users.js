@@ -2,8 +2,8 @@
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
- 
-    return await queryInterface.createTable('users', { 
+
+    return await queryInterface.createTable('users', {
       id: {
         type: Sequelize.INTEGER,
         primaryKey: true,
@@ -36,6 +36,10 @@ module.exports = {
         type: Sequelize.STRING,
         allowNull: false,
       },
+      is_driver: {
+        type: Sequelize.BOOLEAN,
+        allowNull: false
+      },
       active: {
         type: Sequelize.BOOLEAN,
         allowNull: false,
@@ -49,7 +53,7 @@ module.exports = {
         allowNull: false,
       }
     });
-     
+
   },
 
   down: async (queryInterface, Sequelize) => {

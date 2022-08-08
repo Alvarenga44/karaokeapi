@@ -2,28 +2,27 @@
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
- 
-    return await queryInterface.createTable('categories', { 
+
+    return await queryInterface.createTable('images', {
       id: {
         type: Sequelize.INTEGER,
         primaryKey: true,
         autoIncrement: true,
         allowNull: false,
       },
-      company_id: {
+      id_fk: {
         type: Sequelize.INTEGER,
         allowNull: false,
-        references: { model: 'master_companies', key: 'id' },
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE'
       },
-      title: {
+      column: {
         type: Sequelize.STRING,
         allowNull: false,
       },
-      subtitle: {
+      img_url: {
         type: Sequelize.STRING,
-        allowNull: true,
+        allowNull: false,
       },
       active: {
         type: Sequelize.BOOLEAN,
@@ -38,7 +37,7 @@ module.exports = {
         allowNull: false,
       }
     });
-     
+
   },
 
   down: async (queryInterface, Sequelize) => {

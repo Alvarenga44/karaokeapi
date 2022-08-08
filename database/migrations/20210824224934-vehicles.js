@@ -2,24 +2,43 @@
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
- 
-    return await queryInterface.createTable('image_products', { 
+
+    return await queryInterface.createTable('vehicles', {
       id: {
         type: Sequelize.INTEGER,
         primaryKey: true,
         autoIncrement: true,
         allowNull: false,
       },
-      product_id: {
+      company_id: {
         type: Sequelize.INTEGER,
         allowNull: false,
-        references: { model: 'products', key: 'id' },
+        references: { model: 'master_companies', key: 'id' },
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE'
       },
-      img_url: {
+      user_id: {
         type: Sequelize.INTEGER,
         allowNull: false,
+        references: { model: 'users', key: 'id' },
+        onUpdate: 'CASCADE',
+        onDelete: 'CASCADE'
+      },
+      model: {
+        type: Sequelize.STRING,
+        allowNull: false,
+      },
+      version: {
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
+      plate: {
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
+      color: {
+        type: Sequelize.STRING,
+        allowNull: true,
       },
       active: {
         type: Sequelize.BOOLEAN,
@@ -34,7 +53,7 @@ module.exports = {
         allowNull: false,
       }
     });
-     
+
   },
 
   down: async (queryInterface, Sequelize) => {

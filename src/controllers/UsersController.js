@@ -1,7 +1,7 @@
 const Users = require('../models/Users');
 
 module.exports = {
-  async index(req, res) {
+  async index(res) {
     try {
       const users = await Users.findAndCountAll({
         where: { active: 1 },
@@ -48,6 +48,7 @@ module.exports = {
       const {
         name,
         email,
+        is_driver,
         password
       } = req.body;
 
@@ -57,6 +58,7 @@ module.exports = {
           name,
           email,
           password,
+          is_driver,
           company_id,
           role_id,
           active: 1
@@ -85,6 +87,7 @@ module.exports = {
       const {
         name,
         email,
+        is_driver,
         password,
         active,
         role_id,
@@ -95,6 +98,7 @@ module.exports = {
         name,
         email,
         password,
+        is_driver,
         active,
         role_id,
         company_id

@@ -2,8 +2,8 @@
 
 module.exports = {
   up: async (queryInterface, Sequelize) => {
- 
-    return await queryInterface.createTable('roles', { 
+
+    return await queryInterface.createTable('roles', {
       id: {
         type: Sequelize.INTEGER,
         primaryKey: true,
@@ -23,7 +23,7 @@ module.exports = {
         allowNull: false,
       }
     });
-     
+
   },
 
   down: async (queryInterface, Sequelize) => {

@@ -5,9 +5,9 @@ module.exports = {
 
     return queryInterface.bulkInsert('master_companies', [
       {
-        cnpj: '65069593000198',
-        company_name: "Alvarenga Desenvolvimento LTDA",
-        fantasy_name: "Alvarenga Technology",
+        cnpj: '13794399000171',
+        company_name: "IDEA MAKER MEIOS DE PAGAMENTO E CONSULTORIA LTDA",
+        fantasy_name: "IDEA MAKER SOLUTIONS",
         img_url: "",
         active: 1,
         created_at: new Date(),

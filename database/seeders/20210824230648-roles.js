@@ -1,8 +1,8 @@
 'use strict';
 
 module.exports = {
-  up: async (queryInterface, Sequelize) => {
-  
+  up: async (queryInterface) => {
+
     return queryInterface.bulkInsert('roles', [
       {
         name: 'admin',
@@ -22,7 +22,7 @@ module.exports = {
     ]);
   },
 
-  down: async (queryInterface, Sequelize) => {
+  down: async () => {
     /**
      * Add commands to revert seed here.
      *

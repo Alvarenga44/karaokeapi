@@ -1,7 +1,7 @@
 const MasterCompany = require('../models/MasterCompany');
 
 module.exports = {
-  async index(req, res) {
+  async index(res) {
     try {
       const master_company = await MasterCompany.findAndCountAll({
         where: { active: 1 },

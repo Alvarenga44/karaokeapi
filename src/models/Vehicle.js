@@ -1,10 +1,12 @@
 const { Model, DataTypes } = require('sequelize');
 
-class Categories extends Model {
+class Vehicle extends Model {
   static init(sequelize) {
     super.init({
-      title: DataTypes.STRING,
-      subtitle: DataTypes.STRING,
+      model: DataTypes.STRING,
+      version: DataTypes.STRING,
+      plate: DataTypes.STRING,
+      color: DataTypes.STRING,
       active: DataTypes.BOOLEAN,
     }, {
       sequelize
@@ -13,8 +15,8 @@ class Categories extends Model {
 
   static associate(models) {
     this.belongsTo(models.MasterCompany, { foreignKey: 'company_id', as: 'company' })
-    this.hasMany(models.Products, { foreignKey: 'category_id', as: 'products' })
+    this.belongsTo(models.Users, { foreignKey: 'user_id', as: 'user' })
   }
 }
 
-module.exports = Categories
+module.exports = Vehicle

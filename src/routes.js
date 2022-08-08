@@ -7,25 +7,15 @@ const AuthController = require('./controllers/AuthController');
 const RolesController = require('./controllers/RolesController');
 const MasterCompanyController = require('./controllers/MasterCompanyController');
 const UsersController = require('./controllers/UsersController');
-const CategoriesController = require('./controllers/CategoriesController');
-const ProductsController = require('./controllers/ProductsController');
-
-// Menu Digital Models
-
-const DigitalMenuController = require('./controllers/ClienteController/DigitalMenuController')
+const VehiclesController = require('./controllers/VehiclesController');
 
 const auth = require('./middleware/auth');
 
 const routes = express.Router();
 
-routes.get('/', (req, res) => {
-  return res.json({ msg: 'API DigitalMenu Online' });
+routes.get('/', (res) => {
+  return res.json({ msg: 'ShareWay API Online' });
 });
-
-// MenuRoutes
-
-routes.get('/v1/digitalmenu/:id', DigitalMenuController.index);
-
 
 // Auth
 
@@ -52,18 +42,11 @@ routes.post('/v1/users', auth, UsersController.store);
 routes.put('/v1/users/:id', auth, UsersController.update);
 routes.delete('/v1/users/:id', auth, UsersController.delete);
 
-// Categories
-routes.get('/v1/categories', auth, CategoriesController.index);
-routes.get('/v1/categories/:id', auth, CategoriesController.show);
-routes.post('/v1/categories', auth, CategoriesController.store);
-routes.put('/v1/categories/:id', auth, CategoriesController.update);
-routes.delete('/v1/categories/:id', auth, CategoriesController.delete);
-
-// Products
-routes.get('/v1/products', auth, ProductsController.index);
-routes.get('/v1/products/:id', auth, ProductsController.show);
-routes.post('/v1/products', auth, ProductsController.store);
-routes.put('/v1/products/:id', auth, ProductsController.update);
-routes.delete('/v1/products/:id', auth, ProductsController.delete);
+// Vehicles
+routes.get('/v1/vehicle', auth, VehiclesController.index);
+routes.get('/v1/vehicle/:id', auth, VehiclesController.show);
+routes.post('/v1/vehicle', auth, VehiclesController.store);
+routes.put('/v1/vehicle/:id', auth, VehiclesController.update);
+routes.delete('/v1/vehicle/:id', auth, VehiclesController.delete);
 
 module.exports = routes;

@@ -6,6 +6,7 @@ class Users extends Model {
       name: DataTypes.STRING,
       email: DataTypes.STRING,
       password: DataTypes.STRING,
+      is_driver: DataTypes.BOOLEAN,
       active: DataTypes.BOOLEAN,
     }, {
       sequelize,
@@ -17,8 +18,8 @@ class Users extends Model {
         .then(hash => {
           user.password = hash;
         })
-        .catch(err => { 
-            throw new Error(); 
+        .catch(err => {
+          throw new Error();
         });
     });
   }

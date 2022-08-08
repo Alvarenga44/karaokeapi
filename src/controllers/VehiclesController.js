@@ -1,10 +1,10 @@
-const Categories = require('../models/Categories');
+const Vehicle = require('../models/Vehicle');
 
 module.exports = {
   async index(req, res) {
     const { company_id } = req.headers;
     try {
-      const categories = await Categories.findAndCountAll({
+      const vehicles = await Vehicle.findAndCountAll({
         where: { company_id },
         include: [
           {
@@ -14,14 +14,14 @@ module.exports = {
       });
 
       return res.status(200).json({
-        categories
+        vehicles
       })
     } catch (error) {
       console.log(error)
       let e = [];
       e.push(error);
       return res.status(500).json({
-        title: 'Falha ao listar categoria, tente novamente',
+        title: 'Falha ao listar veículos, tente novamente',
         e
       })
     }
@@ -30,7 +30,7 @@ module.exports = {
   async show(req, res) {
     try {
       const { id } = req.params;
-      const categories = await Categories.findOne({ id }, {
+      const vehicles = await Vehicle.findOne({ id }, {
         include: [
           {
             all: true
@@ -38,7 +38,7 @@ module.exports = {
         ]
       });
 
-      return res.status(200).json(categories)
+      return res.status(200).json(vehicles)
     } catch (error) {
       let e = [];
       e.push(error);
@@ -51,26 +51,31 @@ module.exports = {
 
   async store(req, res) {
     try {
-      const { company_id } = req.headers;
+      const { company_id, user_id } = req.headers;
       const {
-        title,
-        subtitle,
+        model,
+        version,
+        plate,
+        color,
       } = req.body;
 
-      const [categories, created] = await Categories.findOrCreate({
-        where: { title },
+      const [vehicles, created] = await Vehicle.findOrCreate({
+        where: { plate },
         defaults: {
-          title,
-          subtitle,
+          model,
+          version,
+          plate,
+          color,
           company_id,
+          user_id,
           active: 1
         }
       });
 
       return res.status(201).json({
-        title: 'Categoria cadastrada com sucesso',
+        title: 'Veículo cadastrado com sucesso',
         created,
-        categories
+        vehicles
       })
     } catch (error) {
       console.log(error)
@@ -87,16 +92,22 @@ module.exports = {
     try {
       const { id } = req.params;
       const {
-        title,
-        subtitle,
+        model,
+        version,
+        plate,
+        color,
         company_id,
+        user_id,
         active,
       } = req.body;
 
-      const categories = await Categories.update({
-        title,
-        subtitle,
+      const vehicles = await Vehicle.update({
+        model,
+        version,
+        plate,
+        color,
         company_id,
+        user_id,
         active,
       }, {
         where: {
@@ -104,7 +115,7 @@ module.exports = {
         }
       });
 
-      return res.status(200).json({ msg: 'Categoria atualizado com sucesso', categories })
+      return res.status(200).json({ msg: 'Veículo atualizado com sucesso', vehicles })
     } catch (error) {
       console.log(error)
       let e = [];
@@ -119,9 +130,9 @@ module.exports = {
   async delete(req, res) {
     try {
       const { id } = req.params;
-      const categories = await Categories.destroy({ where: { id } });
+      const vehicles = await Vehicle.destroy({ where: { id } });
 
-      return res.status(200).json({ msg: 'Categoria deletado com sucesso', categories })
+      return res.status(200).json({ msg: 'Veículo deletado com sucesso', vehicles })
     } catch (error) {
       let e = [];
       e.push(error);
