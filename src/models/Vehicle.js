@@ -16,7 +16,7 @@ class Vehicle extends Model {
   static associate(models) {
     this.belongsTo(models.MasterCompany, { foreignKey: 'company_id', as: 'company' })
     this.belongsTo(models.Users, { foreignKey: 'user_id', as: 'user' })
-    this.hasMany(models.Scheduler, { foreignKey: 'vehicle_id', as: 'schedulers' })
+    this.hasMany(models.Scheduler, { foreignKey: 'vehicle_id' })
   }
 }
 

@@ -53,6 +53,7 @@ module.exports = {
     try {
       const { vehicle_id, user_id } = req.headers;
       const {
+        amount,
         departure_hour,
         departure_date,
         departure_destination,
@@ -61,6 +62,7 @@ module.exports = {
       const [schedule, created] = await Scheduler.findOrCreate({
         where: { departure_date },
         defaults: {
+          amount,
           departure_hour,
           departure_date,
           departure_destination,
@@ -90,6 +92,7 @@ module.exports = {
     try {
       const { id } = req.params;
       const {
+        amount,
         departure_date,
         departure_hour,
         departure_destination,
@@ -99,6 +102,7 @@ module.exports = {
       } = req.body;
 
       const schedule = await Scheduler.update({
+        amount,
         departure_date,
         departure_hour,
         departure_destination,

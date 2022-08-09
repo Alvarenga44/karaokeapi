@@ -3,6 +3,7 @@ const { Model, DataTypes } = require('sequelize');
 class Scheduler extends Model {
   static init(sequelize) {
     super.init({
+      amount: DataTypes.STRING,
       departure_date: DataTypes.STRING,
       departure_hour: DataTypes.STRING,
       departure_destination: DataTypes.STRING,
@@ -13,8 +14,9 @@ class Scheduler extends Model {
   }
 
   static associate(models) {
-    this.belongsTo(models.Vehicle, { foreignKey: 'vehicle_id', as: 'vehicle' })
     this.belongsTo(models.Users, { foreignKey: 'user_id', as: 'user' })
+    this.belongsTo(models.Vehicle, { foreignKey: 'vehicle_id', as: 'vehicle' })
+
   }
 }
 

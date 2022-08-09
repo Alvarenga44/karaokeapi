@@ -24,6 +24,10 @@ module.exports = {
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE'
       },
+      amount: {
+        type: Sequelize.STRING,
+        allowNull: false,
+      },
       departure_date: {
         type: Sequelize.STRING,
         allowNull: false,

@@ -28,9 +28,8 @@ class Users extends Model {
   static associate(models) {
     this.belongsTo(models.MasterCompany, { foreignKey: 'company_id', as: 'company' })
     this.belongsTo(models.Roles, { foreignKey: 'role_id', as: 'roles' })
-    this.hasMany(models.Vehicle, { foreignKey: 'vehicle_id', as: 'vehicles' })
-    this.hasMany(models.Scheduler, { foreignKey: 'user_id', as: 'schedulers' })
-
+    this.hasOne(models.Vehicle, { foreignKey: 'user_id' })
+    this.hasMany(models.Scheduler, { foreignKey: 'user_id' })
   }
 }
 
