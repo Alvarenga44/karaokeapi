@@ -8,6 +8,7 @@ const RolesController = require('./controllers/RolesController');
 const MasterCompanyController = require('./controllers/MasterCompanyController');
 const UsersController = require('./controllers/UsersController');
 const VehiclesController = require('./controllers/VehiclesController');
+const SchedulerController = require('./controllers/SchedulerController');
 
 const auth = require('./middleware/auth');
 
@@ -48,5 +49,11 @@ routes.get('/v1/vehicle/:id', auth, VehiclesController.show);
 routes.post('/v1/vehicle', auth, VehiclesController.store);
 routes.put('/v1/vehicle/:id', auth, VehiclesController.update);
 routes.delete('/v1/vehicle/:id', auth, VehiclesController.delete);
+
+routes.get('/v1/scheduler', auth, SchedulerController.index);
+routes.get('/v1/scheduler/:id', auth, SchedulerController.show);
+routes.post('/v1/scheduler', auth, SchedulerController.store);
+routes.put('/v1/scheduler/:id', auth, SchedulerController.update);
+routes.delete('/v1/scheduler/:id', auth, SchedulerController.delete);
 
 module.exports = routes;

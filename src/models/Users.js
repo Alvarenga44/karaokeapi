@@ -12,13 +12,14 @@ class Users extends Model {
       sequelize,
     })
 
-    Users.beforeCreate((user, options) => {
+    Users.beforeCreate((user) => {
 
       return bcrypt.hash(user.password, 10)
         .then(hash => {
           user.password = hash;
         })
         .catch(err => {
+          console.log(err)
           throw new Error();
         });
     });
@@ -27,6 +28,9 @@ class Users extends Model {
   static associate(models) {
     this.belongsTo(models.MasterCompany, { foreignKey: 'company_id', as: 'company' })
     this.belongsTo(models.Roles, { foreignKey: 'role_id', as: 'roles' })
+    this.hasMany(models.Vehicle, { foreignKey: 'vehicle_id', as: 'vehicles' })
+    this.hasMany(models.Scheduler, { foreignKey: 'user_id', as: 'schedulers' })
+
   }
 }
 
