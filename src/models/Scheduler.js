@@ -3,6 +3,7 @@ const { Model, DataTypes } = require('sequelize');
 class Scheduler extends Model {
   static init(sequelize) {
     super.init({
+      total_reservations: DataTypes.STRING,
       amount: DataTypes.STRING,
       departure_date: DataTypes.STRING,
       departure_hour: DataTypes.STRING,
