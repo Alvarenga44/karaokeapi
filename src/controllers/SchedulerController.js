@@ -2,10 +2,8 @@ const Scheduler = require('../models/Scheduler');
 
 module.exports = {
   async index(req, res) {
-    const { user_id } = req.headers;
     try {
       const schedule = await Scheduler.findAndCountAll({
-        where: { user_id },
         include: [
           {
             all: true
@@ -61,7 +59,7 @@ module.exports = {
       } = req.body;
 
       const [schedule, created] = await Scheduler.findOrCreate({
-        where: { departure_date },
+        where: { departure_date, departure_hour },
         defaults: {
           total_reservations,
           amount,
