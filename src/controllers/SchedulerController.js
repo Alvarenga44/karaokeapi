@@ -1,4 +1,6 @@
 const Scheduler = require('../models/Scheduler');
+const Driver = require('../models/Users');
+const Vehicle = require('../models/Vehicle');
 
 module.exports = {
   async index(req, res) {
@@ -28,13 +30,18 @@ module.exports = {
   async show(req, res) {
     try {
       const { id } = req.params;
-      const schedule = await Scheduler.findOne({ id }, {
+      const schedule = await Scheduler.findAndCountAll({
         include: [
           {
             all: true
           }
-        ]
+        ],
+        where: { id }
       });
+
+      if (!schedule) {
+        return res.status(404).json({ msg: 'Viagem não encontrada!' })
+      }
 
       return res.status(200).json(schedule)
     } catch (error) {
@@ -58,23 +65,21 @@ module.exports = {
         departure_destination,
       } = req.body;
 
-      const [schedule, created] = await Scheduler.findOrCreate({
-        where: { departure_date, departure_hour },
-        defaults: {
-          total_reservations,
-          amount,
-          departure_hour,
-          departure_date,
-          departure_destination,
-          vehicle_id,
-          user_id,
-          active: 1
-        }
+      const schedule = await Scheduler.create({
+
+        total_reservations,
+        amount,
+        departure_hour,
+        departure_date,
+        departure_destination,
+        vehicle_id,
+        user_id,
+        active: 1
+
       });
 
       return res.status(201).json({
         title: 'Scheduler cadastrado com sucesso',
-        created,
         schedule
       })
     } catch (error) {
