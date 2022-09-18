@@ -7,6 +7,7 @@ const MasterCompany = require('../src/models/MasterCompany');
 const Users = require('../src/models/Users');
 const Vehicle = require('../src/models/Vehicle');
 const Scheduler = require('../src/models/Scheduler');
+const StopsScheduler = require('../src/models/StopsScheduler')
 
 const connection = new Sequelize(dbConfig);
 
@@ -16,11 +17,13 @@ MasterCompany.init(connection);
 Users.init(connection);
 Vehicle.init(connection);
 Scheduler.init(connection);
+StopsScheduler.init(connection);
 
 Roles.associate(connection.models);
 MasterCompany.associate(connection.models);
 Users.associate(connection.models);
 Vehicle.associate(connection.models);
 Scheduler.associate(connection.models);
+StopsScheduler.associate(connection.models);
 
 module.exports = connection;

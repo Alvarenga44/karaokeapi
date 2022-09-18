@@ -17,6 +17,7 @@ class Scheduler extends Model {
   static associate(models) {
     this.belongsTo(models.Users, { foreignKey: 'user_id', as: 'user' })
     this.belongsTo(models.Vehicle, { foreignKey: 'vehicle_id', as: 'vehicle' })
+    this.hasMany(models.StopsScheduler, { foreignKey: 'scheduler_id' })
 
   }
 }
