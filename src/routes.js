@@ -10,6 +10,7 @@ const UsersController = require('./controllers/UsersController');
 const VehiclesController = require('./controllers/VehiclesController');
 const SchedulerController = require('./controllers/SchedulerController');
 const StopsSchedulerController = require('./controllers/StopsSchedulerController');
+const UserSchedulerController = require('./controllers/UserSchedulerController');
 
 const auth = require('./middleware/auth');
 
@@ -62,5 +63,11 @@ routes.get('/v1/stopsscheduler/:id', auth, StopsSchedulerController.show);
 routes.post('/v1/stopsscheduler', auth, StopsSchedulerController.store);
 routes.put('/v1/stopsscheduler/:id', auth, StopsSchedulerController.update);
 routes.delete('/v1/stopsscheduler/:id', auth, StopsSchedulerController.delete);
+
+routes.get('/v1/userscheduler', auth, UserSchedulerController.index);
+routes.get('/v1/userscheduler/:id', auth, UserSchedulerController.show);
+routes.post('/v1/userscheduler', auth, UserSchedulerController.store);
+routes.put('/v1/userscheduler/:id', auth, UserSchedulerController.update);
+routes.delete('/v1/userscheduler/:id', auth, UserSchedulerController.delete);
 
 module.exports = routes;
