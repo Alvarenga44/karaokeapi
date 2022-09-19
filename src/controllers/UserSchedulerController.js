@@ -138,28 +138,31 @@ module.exports = {
   async delete(req, res) {
     try {
       const { id } = req.params;
-      const { user_id } = req.headers();
+      const { user_id } = req.headers;
 
-      const userSchedule = await UserScheduler.findOne({ user_id });
+      const verifyUserScheduler = await UserScheduler.findOne({ id });
 
-      if (!userSchedule) {
-        return res.status(404).json({ msg: 'Nenhuma viagem vinculada a esse usuário' });
+      if (!verifyUserScheduler) {
+        return res.status(404).json({ msg: 'Nenhuma reserva vinculada a esse usuário' });
       }
 
-      const scheduler = await Scheduler.findOne({ id: userSchedule.scheduler_id });
-      const destroyUserScheduler = await UserScheduler.destroy({ id });
+      const scheduler = await Scheduler.findOne({ id: verifyUserScheduler.scheduler_id });
 
-      if (destroyUserScheduler) {
-        scheduler.total_reservations = scheduler.total_reservations + 1;
-        scheduler.save();
+      if (!scheduler) {
+        return res.status(404).json({ msg: 'Nenhuma viagem vinculada a essa reserva' });
       }
 
-      return res.status(200).json({ msg: 'Reserva deletado com sucesso', userSchedule });
+      scheduler.total_reservations = scheduler.total_reservations + 1;
+      await verifyUserScheduler.destroy()
+      await scheduler.save();
+
+      return res.status(200).json({ msg: 'Reserva deletado com sucesso' });
     } catch (error) {
+      console.log(error)
       let e = [];
       e.push(error);
       return res.status(500).json({
-        title: 'Falha ao inserir reserva, tente novamente',
+        title: 'Falha ao deletar reserva, tente novamente',
         e
       })
     }
