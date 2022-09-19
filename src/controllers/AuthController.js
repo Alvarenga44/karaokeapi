@@ -9,7 +9,13 @@ module.exports = {
       const { email, password } = req.body;
       let account = null;
       console.log(email, password)
-      const users = await Users.findAndCountAll();
+      const users = await Users.findAndCountAll({
+        include: [
+          {
+            all: true
+          }
+        ]
+      });
 
       account = users.rows.find(user => user.email === email);
 
