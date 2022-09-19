@@ -13,6 +13,7 @@ class UserScheduler extends Model {
 
   static associate(models) {
     this.belongsTo(models.Scheduler, { foreignKey: 'scheduler_id' });
+    this.belongsTo(models.Users, { foreignKey: 'user_id' });
   }
 }
 

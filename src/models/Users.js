@@ -30,6 +30,7 @@ class Users extends Model {
     this.belongsTo(models.Roles, { foreignKey: 'role_id', as: 'roles' })
     this.hasOne(models.Vehicle, { foreignKey: 'user_id' })
     this.hasMany(models.Scheduler, { foreignKey: 'user_id' })
+    this.hasMany(models.UserScheduler, { foreignKey: 'user_id' })
   }
 }
 

@@ -1,4 +1,5 @@
 const UserScheduler = require('../models/UserScheduler');
+const Scheduler = require('../models/Scheduler');
 
 module.exports = {
   async index(req, res) {
@@ -59,6 +60,19 @@ module.exports = {
         observations,
       } = req.body;
 
+
+      const scheduler = await Scheduler.findOne({ id: scheduler_id });
+
+      if (scheduler.total_reservations === 0) {
+        return res.status(403).json({ msg: 'Essa viagem está cheia' })
+      }
+
+      const findUserSchedulerByUserId = await UserScheduler.findOne({ user_id });
+
+      if (findUserSchedulerByUserId) {
+        return res.status(403).json({ msg: 'Você já está nesta carona.' });
+      }
+
       const userSchedule = await UserScheduler.create({
         payment_status: 'PENDING',
         observations,
@@ -67,6 +81,10 @@ module.exports = {
         active: 1
       });
 
+      if (userSchedule) {
+        scheduler.total_reservations = scheduler.total_reservations - 1;
+        await scheduler.save()
+      }
       return res.status(201).json({
         title: 'Reserva cadastrada com sucesso',
         userSchedule
@@ -120,9 +138,23 @@ module.exports = {
   async delete(req, res) {
     try {
       const { id } = req.params;
-      const userSchedule = await UserScheduler.destroy({ where: { id } });
+      const { user_id } = req.headers();
 
-      return res.status(200).json({ msg: 'Reserva deletado com sucesso', schedule })
+      const userSchedule = await UserScheduler.findOne({ user_id });
+
+      if (!userSchedule) {
+        return res.status(404).json({ msg: 'Nenhuma viagem vinculada a esse usuário' });
+      }
+
+      const scheduler = await Scheduler.findOne({ id: userSchedule.scheduler_id });
+      const destroyUserScheduler = await UserScheduler.destroy({ id });
+
+      if (destroyUserScheduler) {
+        scheduler.total_reservations = scheduler.total_reservations + 1;
+        scheduler.save();
+      }
+
+      return res.status(200).json({ msg: 'Reserva deletado com sucesso', userSchedule });
     } catch (error) {
       let e = [];
       e.push(error);
