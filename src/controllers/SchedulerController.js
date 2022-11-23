@@ -1,3 +1,5 @@
+const dayjs = require('dayjs');
+
 const Scheduler = require('../models/Scheduler');
 const Driver = require('../models/Users');
 const Vehicle = require('../models/Vehicle');
@@ -13,8 +15,14 @@ module.exports = {
         ]
       });
 
+      const today = new Date();
+
+      const formatedScheduler = schedule.rows.filter(s => s.departure_date >= dayjs(today).format('DD/MM/YYYY'));
+      console.log(today);
+      console.log(dayjs(today).format('DD-MM-YYYY'));
+
       return res.status(200).json({
-        schedule
+        formatedScheduler
       })
     } catch (error) {
       console.log(error)
