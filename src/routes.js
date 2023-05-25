@@ -6,6 +6,7 @@ const multerConfig = require('./config/multer')
 const AuthController = require('./controllers/AuthController');
 const RolesController = require('./controllers/RolesController');
 const MasterCompanyController = require('./controllers/MasterCompanyController');
+const UsersController = require('./controllers/UsersController');
 const SongsController = require('./controllers/SongsController');
 
 const auth = require('./middleware/auth');

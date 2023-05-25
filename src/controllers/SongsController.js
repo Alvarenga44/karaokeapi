@@ -1,13 +1,11 @@
 const dayjs = require('dayjs');
 
-const Scheduler = require('../models/Scheduler');
-const Driver = require('../models/Users');
-const Vehicle = require('../models/Vehicle');
+const Songs = require('../models/Songs');
 
 module.exports = {
   async index(req, res) {
     try {
-      const schedule = await Scheduler.findAndCountAll({
+      const songs = await Songs.findAndCountAll({
         include: [
           {
             all: true
@@ -15,14 +13,14 @@ module.exports = {
         ]
       });
 
-      const today = new Date();
+      //const today = new Date();
 
-      const formatedScheduler = schedule.rows.filter(s => s.departure_date >= dayjs(today).format('DD/MM/YYYY'));
-      console.log(today);
-      console.log(dayjs(today).format('DD-MM-YYYY'));
+      // const formatedScheduler = schedule.rows.filter(s => s.departure_date >= dayjs(today).format('DD/MM/YYYY'));
+      // console.log(today);
+      // console.log(dayjs(today).format('DD-MM-YYYY'));
 
       return res.status(200).json({
-        formatedScheduler
+        songs
       })
     } catch (error) {
       console.log(error)

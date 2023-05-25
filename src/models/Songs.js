@@ -1,6 +1,6 @@
 const { Model, DataTypes } = require('sequelize');
 
-class Scheduler extends Model {
+class Songs extends Model {
   static init(sequelize) {
     super.init({
       table_command: DataTypes.INTEGER,
@@ -23,4 +23,4 @@ class Scheduler extends Model {
   }
 }
 
-module.exports = Scheduler
+module.exports = Songs

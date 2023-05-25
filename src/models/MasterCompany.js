@@ -15,7 +15,6 @@ class MasterCompany extends Model {
 
   static associate(models) {
     this.hasMany(models.Users, { foreignKey: 'company_id', as: 'users' })
-    this.hasMany(models.Vehicle, { foreignKey: 'company_id', as: 'vehicles' })
   }
 }
 
