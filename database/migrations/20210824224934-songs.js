@@ -3,34 +3,47 @@
 module.exports = {
   up: async (queryInterface, Sequelize) => {
 
-    return await queryInterface.createTable('user_schedulers', {
+    return await queryInterface.createTable('songs', {
       id: {
         type: Sequelize.INTEGER,
         primaryKey: true,
         autoIncrement: true,
         allowNull: false,
       },
-      scheduler_id: {
+      company_id: {
         type: Sequelize.INTEGER,
         allowNull: false,
-        references: { model: 'schedulers', key: 'id' },
+        references: { model: 'master_companies', key: 'id' },
         onUpdate: 'CASCADE',
         onDelete: 'CASCADE'
       },
-      user_id: {
+      table_command: {
         type: Sequelize.INTEGER,
         allowNull: false,
-        references: { model: 'users', key: 'id' },
-        onUpdate: 'CASCADE',
-        onDelete: 'CASCADE'
       },
-      payment_status: {
+      table_number: {
         type: Sequelize.STRING,
         allowNull: false,
       },
-      observations: {
+      song_name: {
+        type: Sequelize.STRING,
+        allowNull: false,
+      },
+      artist_name: {
         type: Sequelize.STRING,
         allowNull: true,
+      },
+      waiting_time: {
+        type: Sequelize.INTEGER,
+        allowNull: false,
+      },
+      status: {
+        type: Sequelize.STRING,
+        allowNull: true,
+      },
+      position: {
+        type: Sequelize.INTEGER,
+        allowNull: false,
       },
       active: {
         type: Sequelize.BOOLEAN,

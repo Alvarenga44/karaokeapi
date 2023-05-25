@@ -5,9 +5,9 @@ module.exports = {
 
     return queryInterface.bulkInsert('master_companies', [
       {
-        cnpj: '13794399000171',
-        company_name: "IDEA MAKER MEIOS DE PAGAMENTO E CONSULTORIA LTDA",
-        fantasy_name: "IDEA MAKER SOLUTIONS",
+        cnpj: '00000000000001',
+        company_name: "KARAOKE LEVIANOS BAR LTDA",
+        fantasy_name: "KARAOKE LEVIANOS BAR",
         img_url: "",
         active: 1,
         created_at: new Date(),
