@@ -83,12 +83,49 @@ module.exports = {
           company_id,
           active: 1,
           waiting_time: 60
-        }); 
+        });
 
         return res.status(201).json({
           title: 'Música cadastrado com sucesso',
           song
         })
+      }
+
+      if (findSongs.length > 0) {
+
+        const songCommand = await Songs.findOne({
+          where: {
+            table_command
+          }
+        })
+
+        const songTable = await Songs.findAll({
+          where: {
+            table_number
+          }
+        })
+
+        if (songCommand && songCommand.status == "pending") {
+          if (songTable.length > 0) {
+            const song = await Songs.create({
+              table_command,
+              table_number,
+              song_name,
+              artist_name,
+              status: 'pending',
+              position: 2,
+              company_id,
+              active: 1,
+              waiting_time: 60
+            });
+
+            return res.status(201).json({
+              title: 'Música cadastrado com sucesso',
+              song
+            })
+          }
+        } 
+        return res.json(findSongs)
       }
 
       return res.status(201).json({
