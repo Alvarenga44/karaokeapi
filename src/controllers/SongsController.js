@@ -36,7 +36,7 @@ module.exports = {
   async show(req, res) {
     try {
       const { id } = req.params;
-      const schedule = await Scheduler.findAndCountAll({
+      const songs = await Songs.findAndCountAll({
         include: [
           {
             all: true
@@ -45,16 +45,16 @@ module.exports = {
         where: { id }
       });
 
-      if (!schedule) {
-        return res.status(404).json({ msg: 'Viagem não encontrada!' })
+      if (!songs) {
+        return res.status(404).json({ msg: 'Música não encontrada!' })
       }
 
-      return res.status(200).json(schedule)
+      return res.status(200).json(songs)
     } catch (error) {
       let e = [];
       e.push(error);
       return res.status(500).json({
-        title: 'Falha ao inserir schedule, tente novamente',
+        title: 'Falha ao encontrar música, tente novamente',
         e
       })
     }
@@ -62,38 +62,44 @@ module.exports = {
 
   async store(req, res) {
     try {
-      const { vehicle_id, user_id } = req.headers;
       const {
-        total_reservations,
-        amount,
-        departure_hour,
-        departure_date,
-        departure_destination,
+        table_command,
+        table_number,
+        song_name,
+        artist_name,
+        company_id
       } = req.body;
 
-      const schedule = await Scheduler.create({
+      const findSongs = await Songs.findAll();
 
-        total_reservations,
-        amount,
-        departure_hour,
-        departure_date,
-        departure_destination,
-        vehicle_id,
-        user_id,
-        active: 1
+      if(findSongs.length <= 0) {
+        const song = await Songs.create({
+          table_command,
+          table_number,
+          song_name,
+          artist_name,
+          status: 'pending',
+          position: 1,
+          company_id,
+          active: 1,
+          waiting_time: 60
+        }); 
 
-      });
+        return res.status(201).json({
+          title: 'Música cadastrado com sucesso',
+          song
+        })
+      }
 
       return res.status(201).json({
-        title: 'Scheduler cadastrado com sucesso',
-        schedule
+        title: 'Música cadastrado com sucesso'
       })
     } catch (error) {
       console.log(error)
       let e = [];
       e.push(error);
       return res.status(500).json({
-        title: 'Falha ao inserir schedule, tente novamente',
+        title: 'Falha ao inserir música, tente novamente',
         e
       })
     }
