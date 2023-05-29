@@ -101,34 +101,65 @@ module.exports = {
         })
       }
 
+      const songCommand = await Songs.findOne({
+        where: {
+          table_command
+        }
+      })
+
+      const maxPositionResult = await Songs.findAll({
+        attributes: [
+           sequelize.fn('MAX', sequelize.col('position')),
+        ],
+        raw: true,
+        where: { company_id }
+      })
+
+      const minPositionResult = await Songs.findAll({
+        attributes: [
+           sequelize.fn('MIN', sequelize.col('position')),
+        ],
+        raw: true,
+        where: { company_id }
+      })
+
+      const songTable = await Songs.findAll({
+        where: {
+          table_number
+        }
+      })
+
+      if (!songCommand && songTable.length == 0) {
+        console.log('entrou blablabla')
+         // ATUALIZA AS POSICOES
+        findSongs.map(async songs => {
+          console.log('position', songs.position)
+          if (songs.position >= 3) {
+            const song = await Songs.findOne({ where: { company_id, position: songs.position } })
+            await song.update({position: song.position + 1});
+            await song.save();
+          }
+        })
+        // ADICIONA A NOVA MUSICA
+        const song = await Songs.create({
+          table_command,
+          table_number,
+          song_name,
+          artist_name,
+          status: 'pending',
+          position: minPositionResult[0]['MIN(`position`)'] + 2,
+          company_id,
+          active: 1,
+          waiting_time: 60
+        });
+
+        return res.status(201).json({
+          title: 'Música cadastrada com sucesso',
+          song
+        })
+      }
+
       if (findSongs.length > 0) {
-        const maxPositionResult = await Songs.findAll({
-          attributes: [
-             sequelize.fn('MAX', sequelize.col('position')),
-          ],
-          raw: true,
-          where: { company_id }
-        })
-
-        const minPositionResult = await Songs.findAll({
-          attributes: [
-             sequelize.fn('MIN', sequelize.col('position')),
-          ],
-          raw: true,
-          where: { company_id }
-        })
-
-        const songCommand = await Songs.findOne({
-          where: {
-            table_command
-          }
-        })
-
-        const songTable = await Songs.findAll({
-          where: {
-            table_number
-          }
-        })
         // Existe comanda em aberto e esta com status pendente
         if (songCommand && songCommand.status == "pending") {
           // VEDRFICA SE EXISTE MESA
