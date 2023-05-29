@@ -130,7 +130,6 @@ module.exports = {
       })
 
       if (!songCommand && songTable.length == 0) {
-        console.log('entrou blablabla')
          // ATUALIZA AS POSICOES
         findSongs.map(async songs => {
           console.log('position', songs.position)
