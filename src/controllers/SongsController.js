@@ -159,7 +159,6 @@ module.exports = {
             findSongs.map(async songs => {
               console.log('position', songs.position)
               if (songs.position >= 3) {
-                console.log('position if', songs.position)
                 const song = await Songs.findOne({ where: { company_id, position: songs.position } })
                 await song.update({position: song.position + 1});
                 await song.save();
