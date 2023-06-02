@@ -234,6 +234,7 @@ module.exports = {
     try {
       const { id } = req.params;
       const {
+        company_id,
         status
       } = req.body;
 
