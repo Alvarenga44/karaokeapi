@@ -234,38 +234,39 @@ module.exports = {
     try {
       const { id } = req.params;
       const {
-        total_reservations,
-        amount,
-        departure_date,
-        departure_hour,
-        departure_destination,
-        vehicle_id,
-        user_id,
-        active,
+        status
       } = req.body;
 
-      const schedule = await Scheduler.update({
-        total_reservations,
-        amount,
-        departure_date,
-        departure_hour,
-        departure_destination,
-        vehicle_id,
-        user_id,
-        active,
+      let findSongs = await Songs.findAll({
+        where: { company_id },
+        raw: true
+      });
+
+      const song = await Songs.update({
+        status
       }, {
         where: {
           id
         }
       });
 
-      return res.status(200).json({ msg: 'Scheduler atualizado com sucesso', schedule })
+      // ATUALIZA AS POSICOES
+      findSongs.map(async songs => {
+        console.log('position', songs.position)
+        if (songs.position >= 2) {
+          const song = await Songs.findOne({ where: { company_id, position: songs.position } })
+          await song.update({position: song.position - 1});
+          await song.save();
+        }
+      })
+
+      return res.status(200).json({ msg: 'Música atualizada com sucesso', song })
     } catch (error) {
       console.log(error)
       let e = [];
       e.push(error);
       return res.status(500).json({
-        title: 'Falha ao inserir schedule, tente novamente',
+        title: 'Falha ao atualizar música, tente novamente',
         e
       })
     }
@@ -274,14 +275,14 @@ module.exports = {
   async delete(req, res) {
     try {
       const { id } = req.params;
-      const schedule = await Scheduler.destroy({ where: { id } });
+      const song = await Song.destroy({ where: { id } });
 
-      return res.status(200).json({ msg: 'Scheduler deletado com sucesso', schedule })
+      return res.status(200).json({ msg: 'Música deletada com sucesso', song })
     } catch (error) {
       let e = [];
       e.push(error);
       return res.status(500).json({
-        title: 'Falha ao inserir schedule, tente novamente',
+        title: 'Falha ao deletar schedula, tente novamente',
         e
       })
     }
