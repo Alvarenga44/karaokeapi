@@ -44,6 +44,7 @@ routes.delete('/v1/users/:id', auth, UsersController.delete);
 
 routes.get('/v1/songs', auth, SongsController.index);
 routes.get('/v1/songs/:id', auth, SongsController.show);
+routes.post('/v1/songs/clientlist', SongsController.showClientSong);
 routes.post('/v1/songs', SongsController.store);
 routes.put('/v1/songs/:id', auth, SongsController.update);
 routes.delete('/v1/songs/:id', auth, SongsController.delete);

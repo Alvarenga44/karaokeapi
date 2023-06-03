@@ -1,7 +1,13 @@
-const dayjs = require('dayjs');
 const sequelize = require('sequelize');
+const { Server } = require('socket.io');
 
 const Songs = require('../models/Songs');
+
+const io = new Server(4000, {
+  cors: {
+    origin: '*',
+  },
+});
 
 module.exports = {
   async index(req, res) {
@@ -67,6 +73,43 @@ module.exports = {
     }
   },
 
+  async showClientSong(req, res) {
+    try {
+      const { table_command, company_id } = req.body;
+
+      if (!table_command && !company_id) {
+        return res.status(400).json('Informe o número da comanda e empresa a ser consultada')
+      }
+
+      if (!table_command) {
+        return res.status(400).json('Informe o número da comanda')
+      }
+
+      if (!company_id) {
+        return res.status(400).json('Informe a empresa a ser consultada')
+      }
+
+      const songs = await Songs.findAndCountAll({
+        where: {
+          table_command,
+          company_id
+        },
+        order: [
+          ['position', 'ASC']
+        ],
+      })
+
+      return res.status(200).json(songs);
+    } catch (error) {
+      let e = [];
+      e.push(error);
+      return res.status(500).json({
+        title: 'Falha ao encontrar música, tente novamente',
+        e
+      })
+    }
+  },
+
   async store(req, res) {
     try {
       const {
@@ -94,6 +137,8 @@ module.exports = {
           active: 1,
           waiting_time: 60
         });
+
+        io.emit('updateSong', "Nova música cadastrada")
 
         return res.status(201).json({
           title: 'Música cadastrado com sucesso',
@@ -152,6 +197,8 @@ module.exports = {
           waiting_time: 60
         });
 
+        io.emit('updateSong', "Nova música cadastrada")
+
         return res.status(201).json({
           title: 'Música cadastrada com sucesso',
           song
@@ -174,6 +221,8 @@ module.exports = {
               active: 1,
               waiting_time: 60
             });
+
+            io.emit('updateSong', "Nova música cadastrada")
 
             return res.status(201).json({
               title: 'Música cadastrada com sucesso',
@@ -207,6 +256,8 @@ module.exports = {
               waiting_time: 60
             });
 
+            io.emit('updateSong', "Nova música cadastrada")
+
             return res.status(201).json({
               title: 'Música cadastrada com sucesso',
               song
@@ -215,6 +266,8 @@ module.exports = {
         }
         return res.json(findSongs)
       }
+
+      io.emit('updateSong', "Nova música cadastrada")
 
       return res.status(201).json({
         title: 'Música cadastrado com sucesso'
@@ -259,8 +312,10 @@ module.exports = {
           await song.update({position: song.position - 1});
           await song.save();
         }
-      })
+      });
 
+      io.emit('updateSong', "Nova música atualizada")
+      
       return res.status(200).json({ msg: 'Música atualizada com sucesso', song })
     } catch (error) {
       console.log(error)
