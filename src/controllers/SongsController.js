@@ -99,6 +99,10 @@ module.exports = {
         ],
       })
 
+      if (songs.rows.length == 0) {
+        return res.status(400).json("Nenhuma música encontrada com am comanda informada.")
+      }
+
       return res.status(200).json(songs);
     } catch (error) {
       let e = [];
@@ -126,6 +130,7 @@ module.exports = {
       });
       // Caso nao tenha musicas cadastradas na base
       if(findSongs.length <= 0) {
+        console.log('if 1')
         const song = await Songs.create({
           table_command,
           table_number,
@@ -157,7 +162,7 @@ module.exports = {
            sequelize.fn('MAX', sequelize.col('position')),
         ],
         raw: true,
-        where: { company_id }
+        where: { company_id, status: 'pending' }
       })
 
       const minPositionResult = await Songs.findAll({
@@ -165,7 +170,10 @@ module.exports = {
            sequelize.fn('MIN', sequelize.col('position')),
         ],
         raw: true,
-        where: { company_id }
+        where: { 
+          company_id,
+          status: 'pending'
+        }
       })
 
       const songTable = await Songs.findAll({
@@ -175,6 +183,7 @@ module.exports = {
       })
 
       if (!songCommand && songTable.length == 0) {
+        console.log('if 2')
          // ATUALIZA AS POSICOES
         findSongs.map(async songs => {
           console.log('position', songs.position)
@@ -191,7 +200,7 @@ module.exports = {
           song_name,
           artist_name,
           status: 'pending',
-          position: minPositionResult[0]['MIN(`position`)'] + 2,
+          position: minPositionResult[0]['MIN(`position`)'] + 1,
           company_id,
           active: 1,
           waiting_time: 60
@@ -206,10 +215,13 @@ module.exports = {
       }
 
       if (findSongs.length > 0) {
+        console.log('if 3')
         // Existe comanda em aberto e esta com status pendente
         if (songCommand && songCommand.status == "pending") {
+          console.log('if 4')
           // VEDRFICA SE EXISTE MESA
           if (songTable.length > 0) {
+            console.log('if 5')
             const song = await Songs.create({
               table_command,
               table_number,
@@ -232,11 +244,12 @@ module.exports = {
         }
         // REGRA PARA QUANDO COMANDA NAO CANTOU
         if (!songCommand) {
+          console.log('if 6')
           // Verifica se mesa ja tem musica
-          if (songTable.length > 0 && songTable.status !== 'canceled') {
+          if (songTable.length > 0 && songTable.status !== 'canceled' || songTable.status !== 'approved') {
+            console.log('if 7')
             // ATUALIZA AS POSICOES
             findSongs.map(async songs => {
-              console.log('position', songs.position)
               if (songs.position >= 3) {
                 const song = await Songs.findOne({ where: { company_id, position: songs.position } })
                 await song.update({position: song.position + 1});
@@ -297,7 +310,8 @@ module.exports = {
       });
 
       const song = await Songs.update({
-        status
+        status,
+        position: 0
       }, {
         where: {
           id
