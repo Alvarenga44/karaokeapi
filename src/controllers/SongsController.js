@@ -258,16 +258,19 @@ module.exports = {
           if (songTable.length > 0 && songTable.status !== 'canceled' || songTable.status !== 'approved') {
             console.log('if 7')
             // ATUALIZA AS POSICOES
-            findSongs.map(async songs => {
+            for (const songs of findSongs) {
               if (songs.position >= 3 && songs.status == 'pending') {
-                const song = await Songs.findOne({ where: { company_id, position: songs.position } })
-                if (song.status == 'pending' && song.position >= 3) {
-                  const newPosition = song.position + 1
-                  await song.update({position: newPosition});
-                  await song.save();
-                }
+                const newPosition = songs.position + 1
+                await Songs.update({
+                  position: newPosition
+                }, {
+                  where: {
+                    company_id,
+                    id: songs.id
+                  }
+                });
               }
-            })  
+            }
             // ADICIONA A NOVA MUSICA
             const song = await Songs.create({
               table_command,
@@ -275,7 +278,7 @@ module.exports = {
               song_name,
               artist_name,
               status: 'pending',
-              position: minPositionResult[0]['MIN(`position`)'] + 2,
+              position: minPositionResult[0]['MIN(`position`)'] + 1,
               company_id,
               active: 1,
               waiting_time: 60
@@ -333,7 +336,6 @@ module.exports = {
       if (status != 'approved') {
         return res.status(400).json({ msg: 'Status informado incorretamente', status: status })
       }
-      // ATUALIZA AS POSICOES
       // ATUALIZA AS POSICOES
       if (status == 'approved') {
         for(let songs of findSongs) {
