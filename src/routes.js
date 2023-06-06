@@ -47,6 +47,7 @@ routes.get('/v1/songs/:id', auth, SongsController.show);
 routes.post('/v1/songs/clientlist', SongsController.showClientSong);
 routes.post('/v1/songs', SongsController.store);
 routes.put('/v1/songs/:id', auth, SongsController.update);
+routes.put('/v1/songs/cancel/:id', auth, SongsController.cancelMusic);
 routes.delete('/v1/songs/:id', auth, SongsController.delete);
 
 module.exports = routes;

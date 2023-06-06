@@ -124,8 +124,16 @@ module.exports = {
         company_id
       } = req.body;
 
+      console.log(
+        table_command,
+        table_number,
+        song_name,
+        artist_name,
+        company_id
+      )
+
       let findSongs = await Songs.findAll({
-        where: { company_id },
+        where: { company_id, position: { [sequelize.Op.not]: 0 } },
         raw: true
       });
       // Caso nao tenha musicas cadastradas na base
@@ -186,21 +194,23 @@ module.exports = {
         console.log('if 2')
          // ATUALIZA AS POSICOES
         findSongs.map(async songs => {
-          console.log('position', songs.position)
-          if (songs.position >= 3) {
+          if (songs.position >= 2 && songs.status == 'pending') {
             const song = await Songs.findOne({ where: { company_id, position: songs.position } })
-            await song.update({position: song.position + 1});
-            await song.save();
+            if (song.status == 'pending' && song.position >= 2) {
+              const newPosition = song.position + 1
+              await song.update({position: newPosition});
+              await song.save();
+            }
           }
-        })
-        // ADICIONA A NOVA MUSICA
+        })      
+        //ADICIONA A NOVA MUSICA
         const song = await Songs.create({
           table_command,
           table_number,
           song_name,
           artist_name,
           status: 'pending',
-          position: minPositionResult[0]['MIN(`position`)'] + 1,
+          position: minPositionResult[0]['MIN(`position`)'] + 1, // Position 2
           company_id,
           active: 1,
           waiting_time: 60
@@ -213,7 +223,6 @@ module.exports = {
           song
         })
       }
-
       if (findSongs.length > 0) {
         console.log('if 3')
         // Existe comanda em aberto e esta com status pendente
@@ -250,12 +259,15 @@ module.exports = {
             console.log('if 7')
             // ATUALIZA AS POSICOES
             findSongs.map(async songs => {
-              if (songs.position >= 3) {
+              if (songs.position >= 3 && songs.status == 'pending') {
                 const song = await Songs.findOne({ where: { company_id, position: songs.position } })
-                await song.update({position: song.position + 1});
-                await song.save();
+                if (song.status == 'pending' && song.position >= 3) {
+                  const newPosition = song.position + 1
+                  await song.update({position: newPosition});
+                  await song.save();
+                }
               }
-            })
+            })  
             // ADICIONA A NOVA MUSICA
             const song = await Songs.create({
               table_command,
@@ -318,19 +330,87 @@ module.exports = {
         }
       });
 
+      if (status != 'approved') {
+        return res.status(400).json({ msg: 'Status informado incorretamente', status: status })
+      }
       // ATUALIZA AS POSICOES
-      findSongs.map(async songs => {
-        console.log('position', songs.position)
-        if (songs.position >= 2) {
-          const song = await Songs.findOne({ where: { company_id, position: songs.position } })
-          await song.update({position: song.position - 1});
-          await song.save();
+      // ATUALIZA AS POSICOES
+      if (status == 'approved') {
+        for(let songs of findSongs) {
+          if (songs.position >= 2) {
+            const newPosition = songs.position - 1
+            await Songs.update({
+              position: newPosition
+            }, {
+              where: {
+                company_id,
+                id: songs.id
+              }
+            });
+          }
         }
-      });
+      }
 
       io.emit('updateSong', "Nova música atualizada")
       
       return res.status(200).json({ msg: 'Música atualizada com sucesso', song })
+    } catch (error) {
+      console.log(error)
+      let e = [];
+      e.push(error);
+      return res.status(500).json({
+        title: 'Falha ao atualizar música, tente novamente',
+        e
+      })
+    }
+  },
+
+  async cancelMusic(req, res) {
+    try {
+      const { id } = req.params;
+      const {
+        company_id,
+        status
+      } = req.body;
+
+      if (status != 'canceled') {
+        return res.status(400).json({ msg: 'Status informado incorretamente.', status: status })
+      }
+
+      let findSongs = await Songs.findAll({
+        where: { company_id, status: 'pending' },
+        raw: true
+      });
+
+      const songToUpdate = await Songs.findOne({
+        where: {
+          id
+        }
+      });
+
+      let originPosition = songToUpdate.position;
+
+      await songToUpdate.update({ position: 0, status });
+      await songToUpdate.save();
+
+      // ATUALIZA AS POSICOES
+      for(let songs of findSongs) {
+        console.log({'origin_position': originPosition, 'position': songs.position})
+        if (songs.position >= originPosition && songs.status == 'pending') {
+          const newPosition = songs.position - 1
+          await Songs.update({
+            position: newPosition
+          }, {
+            where: {
+              company_id,
+              id: songs.id
+            }
+          });
+        }
+      }
+      io.emit('updateSong', "Nova música atualizada")
+      
+      return res.status(200).json({ msg: 'Música atualizada com sucesso', songToUpdate })
     } catch (error) {
       console.log(error)
       let e = [];
