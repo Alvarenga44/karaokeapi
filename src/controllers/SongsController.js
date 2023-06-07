@@ -2,6 +2,7 @@ const sequelize = require('sequelize');
 const { Server } = require('socket.io');
 
 const Songs = require('../models/Songs');
+const Company = require('../models/MasterCompany');
 
 const io = new Server(4000, {
   cors: {
@@ -124,13 +125,11 @@ module.exports = {
         company_id
       } = req.body;
 
-      console.log(
-        table_command,
-        table_number,
-        song_name,
-        artist_name,
-        company_id
-      )
+      const company = await Company.findOne({raw: true, where: {id: company_id}});
+
+      if (!company.isopen) {
+        return res.status(400).json("Músicas encerradas.")
+      }
 
       let findSongs = await Songs.findAll({
         where: { company_id, position: { [sequelize.Op.not]: 0 } },

@@ -113,6 +113,44 @@ module.exports = {
     }
   },
 
+  async closeCompany(req, res) {
+    try {
+      const { id } = req.params;
+
+      await MasterCompany.update({isopen: false}, {
+        where: { id }
+      });
+
+      return res.status(200).json("Empresa atualizada com sucesso")
+    } catch (error) {
+      let e = [];
+      e.push(error);
+      return res.status(500).json({
+        title: 'Falha ao inserir empresa, tente novamente',
+        e
+      })
+    }
+  },
+
+  async openCompany(req, res) {
+    try {
+      const { id } = req.params;
+
+       await MasterCompany.update({isopen: true}, {
+        where: { id }
+      });
+
+      return res.status(200).json("Empresa atualizada com sucesso")
+    } catch (error) {
+      let e = [];
+      e.push(error);
+      return res.status(500).json({
+        title: 'Falha ao inserir empresa, tente novamente',
+        e
+      })
+    }
+  },
+
   async delete(req, res) {
     try {
       const { id } = req.params;

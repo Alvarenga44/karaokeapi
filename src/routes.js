@@ -33,6 +33,8 @@ routes.get('/v1/mastercompanies', auth, MasterCompanyController.index);
 routes.get('/v1/mastercompanies/:id', auth, MasterCompanyController.show);
 routes.post('/v1/mastercompanies', auth, MasterCompanyController.store);
 routes.put('/v1/mastercompanies/:id', auth, multer(multerConfig).single('file'), MasterCompanyController.update);
+routes.put('/v1/mastercompanies/:id/close', auth, MasterCompanyController.closeCompany);
+routes.put('/v1/mastercompanies/:id/open', auth, MasterCompanyController.openCompany);
 routes.delete('/v1/mastercompanies/:id', auth, MasterCompanyController.delete);
 
 // Users

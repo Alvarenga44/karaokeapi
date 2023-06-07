@@ -8,6 +8,7 @@ class MasterCompany extends Model {
       fantasy_name: DataTypes.STRING,
       active: DataTypes.BOOLEAN,
       img_url: DataTypes.STRING,
+      isopen: DataTypes.BOOLEAN
     }, {
       sequelize
     })
