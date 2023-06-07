@@ -132,7 +132,7 @@ module.exports = {
       }
 
       let findSongs = await Songs.findAll({
-        where: { company_id, position: { [sequelize.Op.not]: 0 } },
+        where: { company_id, status: 'pending', position: { [sequelize.Op.not]: 0 } },
         raw: true
       });
       // Caso nao tenha musicas cadastradas na base
