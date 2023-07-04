@@ -160,7 +160,8 @@ module.exports = {
 
       const songCommand = await Songs.findOne({
         where: {
-          table_command
+          table_command,
+          status: 'pending'
         }
       })
 
@@ -188,6 +189,35 @@ module.exports = {
           table_number
         }
       })
+
+      // Verifica se mesa tem mais de duas muúsica sem aberto.
+      let pendingTableSongs = 0;
+      for (const table of songTable) {
+        if (table.status == 'pending' && table.table_number != 99) {
+          pendingTableSongs += 1
+        }
+      }
+
+      if (pendingTableSongs >= 2) {
+        return res.status(400).json(`A mesa possui ${pendingTableSongs} músicas em aberto. Aguarde para solicitar uma nova música.`)
+      }
+
+      // Verifica se comanda tem mais de duas muúsica sem aberto.
+      const songCustomerCommand = await Songs.findAll({
+        where: {
+          table_command
+        }
+      })
+      let pendingCommandSongs = 0;
+      for (const command of songCustomerCommand) {
+        if (command.status == 'pending') {
+          pendingCommandSongs += 1
+        }
+      }
+
+      if (pendingCommandSongs >= 2) {
+        return res.status(400).json(`A comanda possui ${pendingCommandSongs} músicas em aberto. Aguarde para solicitar uma nova música.`)
+      }
 
       if (!songCommand && songTable.length == 0) {
         console.log('if 2')
@@ -258,7 +288,7 @@ module.exports = {
             console.log('if 7')
             // ATUALIZA AS POSICOES
             for (const songs of findSongs) {
-              if (songs.position >= 3 && songs.status == 'pending') {
+              if (songs.position >= 2 && songs.status == 'pending') {
                 const newPosition = songs.position + 1
                 await Songs.update({
                   position: newPosition
