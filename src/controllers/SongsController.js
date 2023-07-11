@@ -13,9 +13,11 @@ const io = new Server(4000, {
 module.exports = {
   async index(req, res) {
     try {
+      const { company_id } = req.headers;
       const songs = await Songs.findAndCountAll({
         where: {
-          status: 'pending'
+          status: 'pending',
+          company_id
         },
         order: [
           ['position', 'ASC']
@@ -26,12 +28,6 @@ module.exports = {
           }
         ]
       });
-
-      //const today = new Date();
-
-      // const formatedScheduler = schedule.rows.filter(s => s.departure_date >= dayjs(today).format('DD/MM/YYYY'));
-      // console.log(today);
-      // console.log(dayjs(today).format('DD-MM-YYYY'));
 
       return res.status(200).json({
         songs
