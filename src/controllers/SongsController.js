@@ -3,6 +3,7 @@ const { Server } = require('socket.io');
 
 const Songs = require('../models/Songs');
 const Company = require('../models/MasterCompany');
+const RoundSongs = require('../models/RoundSongs');
 
 const io = new Server(4000, {
   cors: {
