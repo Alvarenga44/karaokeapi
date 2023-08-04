@@ -56,5 +56,6 @@ routes.delete('/v1/songs/:id', auth, SongsController.delete);
 
 // Rodadas de música
 routes.get('/v1/rounds', auth, RoundSongsController.index);
+routes.put('/v1/rounds', auth, RoundSongsController.update);
 
 module.exports = routes;

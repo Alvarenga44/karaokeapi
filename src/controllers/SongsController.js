@@ -136,7 +136,6 @@ module.exports = {
           company_id,
           active: 1
         });
-
         active_round_id = cretedRound.id
       } else {
         active_round_id = round_songs.id
