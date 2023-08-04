@@ -138,6 +138,8 @@ module.exports = {
         });
 
         active_round_id = cretedRound.id
+      } else {
+        active_round_id = round_songs.id
       }
 
       let findSongs = await Songs.findAll({
@@ -268,6 +270,11 @@ module.exports = {
         // Existe comanda em aberto e esta com status pendente
         if (songCommand && songCommand.status == "pending") {
           console.log('if 4')
+          // Adiciona música mem outra rodadaa
+          const cretedRound = await RoundSongs.create({
+            company_id,
+            active: 0
+          });
           // VEDRFICA SE EXISTE MESA
           if (songTable.length > 0) {
             console.log('if 5')
@@ -281,7 +288,7 @@ module.exports = {
               company_id,
               active: 1,
               waiting_time: 60,
-              round_id: active_round_id
+              round_id: cretedRound.id
             });
 
             io.emit('updateSong', "Nova música cadastrada")
