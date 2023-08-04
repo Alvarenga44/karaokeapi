@@ -5,7 +5,7 @@ module.exports = {
     return queryInterface.addColumn(
       'songs',
       'round_id',
-     Sequelize.INTEGER,
+     Sequelize.BOOLEAN
     );
 
     /**

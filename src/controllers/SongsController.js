@@ -131,7 +131,6 @@ module.exports = {
       // CRIAÇÃO RODADAS DE MÚSICAS
       let active_round_id;
       const round_songs = await RoundSongs.findOne({where: { active: 1 }});
-
       if (!round_songs) {
         const cretedRound = await RoundSongs.create({
           company_id,
@@ -253,7 +252,8 @@ module.exports = {
           position: minPositionResult[0]['MIN(`position`)'] + 1, // Position 2
           company_id,
           active: 1,
-          waiting_time: 60
+          waiting_time: 60,
+          round_id: active_round_id
         });
 
         io.emit('updateSong', "Nova música cadastrada")
@@ -280,7 +280,8 @@ module.exports = {
               position: maxPositionResult[0]['MAX(`position`)'] + 1,
               company_id,
               active: 1,
-              waiting_time: 60
+              waiting_time: 60,
+              round_id: active_round_id
             });
 
             io.emit('updateSong', "Nova música cadastrada")
@@ -321,7 +322,8 @@ module.exports = {
               position: minPositionResult[0]['MIN(`position`)'] + 1,
               company_id,
               active: 1,
-              waiting_time: 60
+              waiting_time: 60,
+              round_id: active_round_id
             });
 
             io.emit('updateSong', "Nova música cadastrada")

@@ -17,10 +17,8 @@ class Songs extends Model {
   }
 
   static associate(models) {
+    this.belongsTo(models.RoundSongs, { foreignKey: 'round_id', as: 'round' }),
     this.belongsTo(models.MasterCompany, { foreignKey: 'company_id', as: 'company' })
-    this.belongsTo(models.RoundSongs, { foreignKey: 'round_id', as: 'round' })
-    
-
   }
 }
 
