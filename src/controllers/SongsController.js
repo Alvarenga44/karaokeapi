@@ -128,6 +128,19 @@ module.exports = {
         return res.status(400).json("Músicas encerradas.")
       }
 
+      // CRIAÇÃO RODADAS DE MÚSICAS
+      let active_round_id;
+      const round_songs = await RoundSongs.findOne({where: { active: 1 }});
+
+      if (!round_songs) {
+        const cretedRound = await RoundSongs.create({
+          company_id,
+          active: 1
+        });
+
+        active_round_id = cretedRound.id
+      }
+
       let findSongs = await Songs.findAll({
         where: { company_id, status: 'pending', position: { [sequelize.Op.not]: 0 } },
         raw: true
@@ -144,7 +157,8 @@ module.exports = {
           position: 1,
           company_id,
           active: 1,
-          waiting_time: 60
+          waiting_time: 60,
+          round_id: active_round_id
         });
 
         io.emit('updateSong', "Nova música cadastrada")

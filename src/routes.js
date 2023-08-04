@@ -8,6 +8,7 @@ const RolesController = require('./controllers/RolesController');
 const MasterCompanyController = require('./controllers/MasterCompanyController');
 const UsersController = require('./controllers/UsersController');
 const SongsController = require('./controllers/SongsController');
+const RoundSongsController = require('./controllers/RoundSongsController');
 
 const auth = require('./middleware/auth');
 
@@ -44,6 +45,7 @@ routes.post('/v1/users', auth, UsersController.store);
 routes.put('/v1/users/:id', auth, UsersController.update);
 routes.delete('/v1/users/:id', auth, UsersController.delete);
 
+// Songs
 routes.get('/v1/songs', auth, SongsController.index);
 routes.get('/v1/songs/:id', auth, SongsController.show);
 routes.post('/v1/songs/clientlist', SongsController.showClientSong);
@@ -51,5 +53,8 @@ routes.post('/v1/songs', SongsController.store);
 routes.put('/v1/songs/:id', auth, SongsController.update);
 routes.put('/v1/songs/cancel/:id', auth, SongsController.cancelMusic);
 routes.delete('/v1/songs/:id', auth, SongsController.delete);
+
+// Rodadas de música
+routes.get('/v1/rounds', auth, RoundSongsController.index);
 
 module.exports = routes;
