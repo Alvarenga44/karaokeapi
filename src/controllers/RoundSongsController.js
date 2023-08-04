@@ -1,4 +1,5 @@
 const RoundSongs = require('../models/RoundSongs');
+const Songs = require('../models/Songs');
 
 module.exports = {
   async index(req, res) {
@@ -7,14 +8,25 @@ module.exports = {
       const round_songs = await RoundSongs.findOne({
         where: {
           active: 1,
-          company_id
+          company_id,
         },
-        include: [
-          {
-            all: true
+        include: [{
+          model: Songs,
+          as: 'songs',
+          where: {
+            status: 'pending'
           }
-        ]
+        }],
+        order: [
+          [
+              {model: Songs, as: 'songs'},
+              'position',
+              'ASC'
+          ]
+      ]
       });
+
+      
 
       if (!round_songs) {
         return res.status(400).json('Nenhuma rodada em aberto');
