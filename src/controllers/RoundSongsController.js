@@ -26,8 +26,6 @@ module.exports = {
       ]
       });
 
-      
-
       if (!round_songs) {
         return res.status(400).json('Nenhuma rodada em aberto');
       }
