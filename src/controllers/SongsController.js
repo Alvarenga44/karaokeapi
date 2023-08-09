@@ -269,11 +269,57 @@ module.exports = {
         // Existe comanda em aberto e esta com status pendente
         if (songCommand && songCommand.status == "pending") {
           console.log('if 4')
-          // Adiciona música mem outra rodadaa
-          const cretedRound = await RoundSongs.create({
-            company_id,
-            active: 0
+          let round_id;
+          // Verifica se tem outra rodada em aberto aguaredando
+          
+          // const nextRound = await RoundSongs.findAll({
+          //   where: {
+          //     company_id
+          //   },
+          //  order: [
+          //   ['id', 'ASC']
+          // ],
+          // include: [{
+          //   model: Songs,
+          //   as: 'songs',
+          //   where: {
+          //     status: 'pending',
+          //     table_command
+          //   },
+          //   attributes: [
+          //     sequelize.fn('MAX', sequelize.col('round_id')),
+          //   ],
+          // }],
+          // order: [
+          //   [
+          //       {model: Songs, as: 'songs'},
+          //       'position',
+          //       'ASC'
+          //   ]
+          // ],
+          // limit: [0, 1],
+          // });
+
+          const findAllCommandSongs = await Songs.findAll({
+            where: {
+              table_command: table_command,
+              status: 'pending'
+            },
+            attributes: [
+              sequelize.fn('MAX', sequelize.col('round_id')),
+            ],
+            raw: true
           });
+          // Verifica se existe rodada com o ID informado.
+          const existRoundId = await RoundSongs.findOne({where: {id: findAllCommandSongs[0]['MAX(`round_id`)'] + 1}});
+          if (!existRoundId) {
+            console.log('entrou')
+            await RoundSongs.create({
+              active: 0,
+              company_id
+            });
+          }
+
           // VEDRFICA SE EXISTE MESA
           if (songTable.length > 0) {
             console.log('if 5')
@@ -287,7 +333,7 @@ module.exports = {
               company_id,
               active: 1,
               waiting_time: 60,
-              round_id: cretedRound.id
+              round_id: findAllCommandSongs[0]['MAX(`round_id`)'] + 1
             });
 
             io.emit('updateSong', "Nova música cadastrada")
@@ -400,9 +446,9 @@ module.exports = {
           }
         }
       }
-
+    
       io.emit('updateSong', "Nova música atualizada")
-      
+    
       return res.status(200).json({ msg: 'Música atualizada com sucesso', song })
     } catch (error) {
       console.log(error)
@@ -488,3 +534,7 @@ module.exports = {
     }
   },
 }
+
+const findNextRoundForSongs = async (table_command, company_id) => {
+  
+};
