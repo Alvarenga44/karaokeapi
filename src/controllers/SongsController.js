@@ -240,7 +240,7 @@ module.exports = {
           raw: true
         });
 
-        if (songsofRoundId.length > 0) {
+        if (songsofRoundId.length > 0 && songsofRoundId[0]['MAX(`position`)']) {
           console.log('1.1 - EXISTE MUSICAS NA RODADA: '.concat(findAllCommandSongs[0]['MAX(`round_id`)'] + 1));
           let initialRoundPendingMaxPosition = songsofRoundId[0]['MAX(`position`)'];
           const allPendingRoundSongs = await Songs.findAll({
