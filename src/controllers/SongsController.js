@@ -329,61 +329,75 @@ module.exports = {
         });
 
         let initialPendingPosition;
+        let has3position = 0
+        let hasNoApprovedCommand = 0
         let arrayInitialPositions = [];
         let getCurrentRound = await RoundSongs.findOne({ 
           where: { company_id, active: 1 },
         });
        
         for await (const verifySong of allSongs) {
-          if (verifySong.position >= 3 && verifySong.status == 'pending') {
-            // console.log(verifySong.table_command)
-            // SELECIONA TODAS AS MUSICAS APROVADAS DA COMANDA
-            const approvedCommandSong = await Songs.findOne({
-              where: {
-                company_id,
-                table_command: verifySong.table_command,
-                status: 'approved'
-              },
-              raw: true 
-            })
-            // CASO EXISTA MUSICAS APROVADAS
-            if (approvedCommandSong) {
-              // console.log('COMANDA APROVADA E PENDENTE', approvedCommandSong);
-              
-              if (verifySong.table_command == approvedCommandSong.table_command) {
-                initialPendingPosition = verifySong.position;
+          if (verifySong.position >= 3) {
+            console.log('2.1 - ENTROU IF')
+            if (verifySong.status == 'pending') {
+              console.log('2.2 - ENTROU IF')
 
-                // console.log('POSIÇÃO APPROVED', initialPendingPosition);
-                const song = await Songs.findOne({ where: { company_id, position: verifySong.position } })
-                if (song.status == 'pending' && song.position >= initialPendingPosition) {
-                  const newPosition = song.position + 1
-                  console.log('initialPendingPosition', initialPendingPosition)
-                  console.log('LOG POSITIONS', {
-                    'song position': song.position,
-                    'newPosition': newPosition
-                  })
-                  await song.update({position: newPosition});
-                  await song.save();
+              // console.log(verifySong.table_command)
+              // SELECIONA TODAS AS MUSICAS APROVADAS DA COMANDA
+              const approvedCommandSong = await Songs.findOne({
+                where: {
+                  company_id,
+                  table_command: verifySong.table_command,
+                  status: 'approved'
+                },
+                raw: true 
+              })
+              // CASO EXISTA MUSICAS APROVADAS
+              if (approvedCommandSong) {
+                // console.log('COMANDA APROVADA E PENDENTE', approvedCommandSong);
+                
+                if (verifySong.table_command == approvedCommandSong.table_command) {
+                  initialPendingPosition = verifySong.position;
+  
+                  // console.log('POSIÇÃO APPROVED', initialPendingPosition);
+                  const song = await Songs.findOne({ where: { company_id, position: verifySong.position } })
+                  if (song.status == 'pending' && song.position >= initialPendingPosition) {
+                    const newPosition = song.position + 1
+                    console.log('initialPendingPosition', initialPendingPosition)
+                    console.log('LOG POSITIONS', {
+                      'song position': song.position,
+                      'newPosition': newPosition
+                    })
+                    await song.update({position: newPosition});
+                    await song.save();
+                  }
+  
+                  arrayInitialPositions.push(initialPendingPosition);
                 }
-
-                arrayInitialPositions.push(initialPendingPosition);
-              }
-            } else {
-              console.log("ENTROU ELSE")
-              const song = await Songs.findOne({ 
-                where: { company_id, round_id: getCurrentRound.id },
-                attributes: [
-                  sequelize.fn('MAX', sequelize.col('position')),
-                ],
-                raw: true
-              });
-
-              if (verifySong.status == 'pending' && verifySong.status == 'approved') {
+              } else {
+                console.log("ENTROU ELSE")
+                has3position = 1
+                const song = await Songs.findOne({ 
+                  where: { company_id, round_id: getCurrentRound.id },
+                  attributes: [
+                    sequelize.fn('MAX', sequelize.col('position')),
+                  ],
+                  raw: true
+                });
+                
                 if (verifySong.status == 'pending') {
                   initialPendingPosition = verifySong.position;
+                  arrayInitialPositions.push(initialPendingPosition);
                 }
+                
               }
+
             }
+          } else {
+            console.log('2 - ENTROU ELSE')
+            has3position = 1
+            initialPendingPosition = verifySong.position;
+            arrayInitialPositions.push(initialPendingPosition);
           }
 
           // if (verifySong.status == 'pending' && verifySong.status == 'approved') {
@@ -393,26 +407,52 @@ module.exports = {
           // }
         }
         //ADICIONA A NOVA MUSICA
-        const song = await Songs.create({
-          table_command,
-          table_number,
-          song_name,
-          artist_name,
-          status: 'pending',
-          position: initialPendingPosition ?  Math.min.apply(Math, arrayInitialPositions) : minPositionResult[0]['MIN(`position`)'] + 2, // Position 3
-          company_id,
-          active: 1,
-          waiting_time: 60,
-          round_id: active_round_id,
-          date_song: today
-        });
+        if (has3position == 0) {
+          const song = await Songs.create({
+            table_command,
+            table_number,
+            song_name,
+            artist_name,
+            status: 'pending',
+            position: initialPendingPosition ?  Math.min.apply(Math, arrayInitialPositions) : minPositionResult[0]['MIN(`position`)'] + 2, // Position 3
+            company_id,
+            active: 1,
+            waiting_time: 60,
+            round_id: active_round_id,
+            date_song: today
+          });
 
-        io.emit('updateSong', "Nova música cadastrada")
+          io.emit('updateSong', "Nova música cadastrada")
+          arrayInitialPositions = []
+          return res.status(201).json({
+            title: 'Música cadastrada com sucesso',
+            song
+          })
+        } else {
+          console.log('NOT 3 POSITION', Math.max.apply(Math, arrayInitialPositions) + 1)
+          const song = await Songs.create({
+            table_command,
+            table_number,
+            song_name,
+            artist_name,
+            status: 'pending',
+            position: Math.max.apply(Math, arrayInitialPositions) + 1, // Position 3
+            company_id,
+            active: 1,
+            waiting_time: 60,
+            round_id: active_round_id,
+            date_song: today
+          });
+          arrayInitialPositions = []
+          io.emit('updateSong', "Nova música cadastrada")
+          
+          has3position = false
+          return res.status(201).json({
+            title: 'Música cadastrada com sucesso',
+            song
+          })
+        }
 
-        return res.status(201).json({
-          title: 'Música cadastrada com sucesso',
-          song
-        })
         // for await (const songs of findSongs) {
         //   if (songs.position >= 3 && songs.status == 'pending') {
         //     const song = await Songs.findOne({ where: { company_id, position: songs.position } })
