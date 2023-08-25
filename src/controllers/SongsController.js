@@ -1,5 +1,6 @@
 const sequelize = require('sequelize');
 const { Server } = require('socket.io');
+const moment = require('moment');
 
 const Songs = require('../models/Songs');
 const Company = require('../models/MasterCompany');
@@ -123,6 +124,7 @@ module.exports = {
       } = req.body;
 
       const company = await Company.findOne({raw: true, where: {id: company_id}});
+      const today = moment().format('YYYY-MM-DD HH:mm:ss');
 
       if (!company.isopen) {
         return res.status(400).json("Músicas encerradas.")
@@ -158,7 +160,8 @@ module.exports = {
           company_id,
           active: 1,
           waiting_time: 60,
-          round_id: active_round_id
+          round_id: active_round_id,
+          date_song: today
         });
 
         io.emit('updateSong', "Nova música cadastrada")
@@ -172,10 +175,11 @@ module.exports = {
       const songCommand = await Songs.findOne({
         where: {
           table_command,
+          company_id,
           status: 'pending'
         }
       })
-
+      // Localiza a maxima posição nas filas de músicas
       const maxPositionResult = await Songs.findAll({
         attributes: [
            sequelize.fn('MAX', sequelize.col('position')),
@@ -183,7 +187,7 @@ module.exports = {
         raw: true,
         where: { company_id, status: 'pending' }
       })
-
+      // Localiza a menor posição nas filas de músicas
       const minPositionResult = await Songs.findAll({
         attributes: [
            sequelize.fn('MIN', sequelize.col('position')),
@@ -197,52 +201,197 @@ module.exports = {
 
       const songTable = await Songs.findAll({
         where: {
-          table_number
+          table_number,
         }
       })
 
-      // Verifica se mesa tem mais de duas muúsica sem aberto.
-      // let pendingTableSongs = 0;
-      // for (const table of songTable) {
-      //   if (table.status == 'pending' && table.table_number != 99) {
-      //     pendingTableSongs += 1
-      //   }
-      // }
+      //REGRA PARA COMANDA JA CANTOU
+      const allApprovedSongs = await Songs.findAll({
+        where: {
+          company_id,
+          table_command,
+          status: 'approved'
+        }
+      })
+      
+      if(allApprovedSongs.length > 0) {
+        console.log('if 1 -  COMANDA JA CANTOU')
+        const findAllCommandSongs = await Songs.findAll({
+          where: {
+            company_id,
+            table_command: table_command,
+            status: ['pending', 'approved']
+          },
+          attributes: [
+            sequelize.fn('MAX', sequelize.col('round_id')),
+          ],
+          raw: true
+        });
 
-      // if (pendingTableSongs >= 2) {
-      //   return res.status(400).json(`A mesa possui ${pendingTableSongs} músicas em aberto. Aguarde para solicitar uma nova música.`)
-      // }
+        const songsofRoundId = await Songs.findAll({
+          where: {
+            company_id,
+            round_id: findAllCommandSongs[0]['MAX(`round_id`)'] + 1,
+            status: ['pending'],
+          },
+          attributes: [
+            sequelize.fn('MAX', sequelize.col('position')),
+          ],
+          raw: true
+        });
 
-      // Verifica se comanda tem mais de duas muúsica sem aberto.
-      // const songCustomerCommand = await Songs.findAll({
-      //   where: {
-      //     table_command
-      //   }
-      // })
-      // let pendingCommandSongs = 0;
-      // for (const command of songCustomerCommand) {
-      //   if (command.status == 'pending') {
-      //     pendingCommandSongs += 1
-      //   }
-      // }
-
-      // if (pendingCommandSongs >= 2) {
-      //   return res.status(400).json(`A comanda possui ${pendingCommandSongs} músicas em aberto. Aguarde para solicitar uma nova música.`)
-      // }
-
-      if (!songCommand && songTable.length == 0) {
-        console.log('if 2')
-         // ATUALIZA AS POSICOES
-        findSongs.map(async songs => {
-          if (songs.position >= 2 && songs.status == 'pending') {
-            const song = await Songs.findOne({ where: { company_id, position: songs.position } })
-            if (song.status == 'pending' && song.position >= 2) {
-              const newPosition = song.position + 1
-              await song.update({position: newPosition});
-              await song.save();
+        if (songsofRoundId.length > 0) {
+          console.log('1.1 - EXISTE MUSICAS NA RODADA: '.concat(findAllCommandSongs[0]['MAX(`round_id`)'] + 1));
+          let initialRoundPendingMaxPosition = songsofRoundId[0]['MAX(`position`)'];
+          const allPendingRoundSongs = await Songs.findAll({
+            where: {
+              company_id,
+              status: 'pending'
+            },
+            raw: true
+          });
+          // LACO PARA ATUALIZAÇÃO DE POSIÇÕES
+          for await (const song of allPendingRoundSongs) {
+            const songToUpdate = await Songs.findOne({ where: { company_id, position: song.position } })
+            if (songToUpdate.status == 'pending' && songToUpdate.position >= initialRoundPendingMaxPosition) {
+              const newPosition = songToUpdate.position + 1
+              await songToUpdate.update({position: newPosition});
+              await songToUpdate.save();
             }
           }
-        })      
+
+          const song = await Songs.create({
+            table_command,
+            table_number,
+            song_name,
+            artist_name,
+            status: 'pending',
+            position: initialRoundPendingMaxPosition,
+            company_id,
+            active: 1,
+            waiting_time: 60,
+            round_id: findAllCommandSongs[0]['MAX(`round_id`)'] + 1,
+            date_song: today
+          });
+  
+          io.emit('updateSong', "Nova música cadastrada")
+  
+          return res.status(201).json({
+            title: 'Música cadastrada com sucesso',
+            song
+          })
+          
+        } else {
+          console.log('IF 1.2 - ELSE CONDITION')
+          // Verifica se existe rodada com o ID informado.
+          const existRoundId = await RoundSongs.findOne({where: {id: findAllCommandSongs[0]['MAX(`round_id`)'] + 1}});
+          if (!existRoundId) {
+            console.log('entrou')
+            await RoundSongs.create({
+              active: 0,
+              company_id
+            });
+          }
+  
+          const song = await Songs.create({
+            table_command,
+            table_number,
+            song_name,
+            artist_name,
+            status: 'pending',
+            position: maxPositionResult[0]['MAX(`position`)'] + 1,
+            company_id,
+            active: 1,
+            waiting_time: 60,
+            round_id: findAllCommandSongs[0]['MAX(`round_id`)'] + 1,
+            date_song: today
+          });
+  
+          io.emit('updateSong', "Nova música cadastrada")
+  
+          return res.status(201).json({
+            title: 'Música cadastrada com sucesso',
+            song
+          })
+        }
+      }
+      
+      // REGRA PARA QUANDO NAO TEM COMANDA E MESA
+      if (!songCommand && songTable.length == 0 || table_number == 99) {
+        console.log('if 2')
+        // ATUALIZA AS POSICOES E INSERE A COMANDA NA 3 POSIÇÃO DE MUSICAS QUE JA CANTARAM
+        const allSongs = await Songs.findAll({
+          where: {
+            company_id,
+            status: ['approved', 'pending']
+          },
+          raw: true
+        });
+
+        let initialPendingPosition;
+        let arrayInitialPositions = [];
+        let getCurrentRound = await RoundSongs.findOne({ 
+          where: { company_id, active: 1 },
+        });
+       
+        for await (const verifySong of allSongs) {
+          if (verifySong.position >= 3 && verifySong.status == 'pending') {
+            // console.log(verifySong.table_command)
+            // SELECIONA TODAS AS MUSICAS APROVADAS DA COMANDA
+            const approvedCommandSong = await Songs.findOne({
+              where: {
+                company_id,
+                table_command: verifySong.table_command,
+                status: 'approved'
+              },
+              raw: true 
+            })
+            // CASO EXISTA MUSICAS APROVADAS
+            if (approvedCommandSong) {
+              // console.log('COMANDA APROVADA E PENDENTE', approvedCommandSong);
+              
+              if (verifySong.table_command == approvedCommandSong.table_command) {
+                initialPendingPosition = verifySong.position;
+
+                // console.log('POSIÇÃO APPROVED', initialPendingPosition);
+                const song = await Songs.findOne({ where: { company_id, position: verifySong.position } })
+                if (song.status == 'pending' && song.position >= initialPendingPosition) {
+                  const newPosition = song.position + 1
+                  console.log('initialPendingPosition', initialPendingPosition)
+                  console.log('LOG POSITIONS', {
+                    'song position': song.position,
+                    'newPosition': newPosition
+                  })
+                  await song.update({position: newPosition});
+                  await song.save();
+                }
+
+                arrayInitialPositions.push(initialPendingPosition);
+              }
+            } else {
+              console.log("ENTROU ELSE")
+              const song = await Songs.findOne({ 
+                where: { company_id, round_id: getCurrentRound.id },
+                attributes: [
+                  sequelize.fn('MAX', sequelize.col('position')),
+                ],
+                raw: true
+              });
+
+              if (verifySong.status == 'pending' && verifySong.status == 'approved') {
+                if (verifySong.status == 'pending') {
+                  initialPendingPosition = verifySong.position;
+                }
+              }
+            }
+          }
+
+          // if (verifySong.status == 'pending' && verifySong.status == 'approved') {
+          //   if (verifySong.status == 'pending') {
+          //     initialPendingPosition = verifySong.position;
+          //   }
+          // }
+        }
         //ADICIONA A NOVA MUSICA
         const song = await Songs.create({
           table_command,
@@ -250,11 +399,12 @@ module.exports = {
           song_name,
           artist_name,
           status: 'pending',
-          position: minPositionResult[0]['MIN(`position`)'] + 1, // Position 2
+          position: initialPendingPosition ?  Math.min.apply(Math, arrayInitialPositions) : minPositionResult[0]['MIN(`position`)'] + 2, // Position 3
           company_id,
           active: 1,
           waiting_time: 60,
-          round_id: active_round_id
+          round_id: active_round_id,
+          date_song: today
         });
 
         io.emit('updateSong', "Nova música cadastrada")
@@ -263,47 +413,48 @@ module.exports = {
           title: 'Música cadastrada com sucesso',
           song
         })
+        // for await (const songs of findSongs) {
+        //   if (songs.position >= 3 && songs.status == 'pending') {
+        //     const song = await Songs.findOne({ where: { company_id, position: songs.position } })
+        //     if (song.status == 'pending' && song.position >= 3) {
+        //       const newPosition = song.position + 1
+        //       await song.update({position: newPosition});
+        //       await song.save();
+        //     }
+        //   }
+        // } 
+        // //ADICIONA A NOVA MUSICA
+        // const song = await Songs.create({
+        //   table_command,
+        //   table_number,
+        //   song_name,
+        //   artist_name,
+        //   status: 'pending',
+        //   position: minPositionResult[0]['MIN(`position`)'] + 2, // Position 3
+        //   company_id,
+        //   active: 1,
+        //   waiting_time: 60,
+        //   round_id: active_round_id,
+        //   date_song: today
+        // });
+
+        // io.emit('updateSong', "Nova música cadastrada")
+
+        // return res.status(201).json({
+        //   title: 'Música cadastrada com sucesso',
+        //   song
+        // })
       }
       if (findSongs.length > 0) {
         console.log('if 3')
         // Existe comanda em aberto e esta com status pendente
         if (songCommand && songCommand.status == "pending") {
           console.log('if 4')
-          let round_id;
-          // Verifica se tem outra rodada em aberto aguaredando
-          
-          // const nextRound = await RoundSongs.findAll({
-          //   where: {
-          //     company_id
-          //   },
-          //  order: [
-          //   ['id', 'ASC']
-          // ],
-          // include: [{
-          //   model: Songs,
-          //   as: 'songs',
-          //   where: {
-          //     status: 'pending',
-          //     table_command
-          //   },
-          //   attributes: [
-          //     sequelize.fn('MAX', sequelize.col('round_id')),
-          //   ],
-          // }],
-          // order: [
-          //   [
-          //       {model: Songs, as: 'songs'},
-          //       'position',
-          //       'ASC'
-          //   ]
-          // ],
-          // limit: [0, 1],
-          // });
 
           const findAllCommandSongs = await Songs.findAll({
             where: {
               table_command: table_command,
-              status: 'pending'
+              status: ['pending', 'approved']
             },
             attributes: [
               sequelize.fn('MAX', sequelize.col('round_id')),
@@ -323,36 +474,107 @@ module.exports = {
           // VEDRFICA SE EXISTE MESA
           if (songTable.length > 0) {
             console.log('if 5')
-            const song = await Songs.create({
-              table_command,
-              table_number,
-              song_name,
-              artist_name,
-              status: 'pending',
-              position: maxPositionResult[0]['MAX(`position`)'] + 1,
-              company_id,
-              active: 1,
-              waiting_time: 60,
-              round_id: findAllCommandSongs[0]['MAX(`round_id`)'] + 1
+
+            const songsofRoundId = await Songs.findAll({
+              where: {
+                company_id,
+                round_id: findAllCommandSongs[0]['MAX(`round_id`)'] + 1,
+                status: ['pending'],
+              },
+              attributes: [
+                sequelize.fn('MAX', sequelize.col('position')),
+              ],
+              raw: true
             });
 
-            io.emit('updateSong', "Nova música cadastrada")
+            if (songsofRoundId[0]['MAX(`position`)']) {
+              console.log('5.1 - EXISTE MUSICAS NA RODADA: '.concat(findAllCommandSongs[0]['MAX(`round_id`)'] + 1));
+              let initialRoundPendingMaxPosition = songsofRoundId[0]['MAX(`position`)'];
+              const allPendingRoundSongs = await Songs.findAll({
+                where: {
+                  company_id,
+                  status: 'pending'
+                },
+                raw: true
+              });
+              // LACO PARA ATUALIZAÇÃO DE POSIÇÕES
+              for await (const song of allPendingRoundSongs) {
+                const songToUpdate = await Songs.findOne({ where: { company_id, position: song.position } })
+                if (songToUpdate.status == 'pending' && songToUpdate.position >= initialRoundPendingMaxPosition) {
+                  const newPosition = songToUpdate.position + 1
+                  await songToUpdate.update({position: newPosition});
+                  await songToUpdate.save();
+                }
+              }
 
-            return res.status(201).json({
-              title: 'Música cadastrada com sucesso',
-              song
-            })
+              const song = await Songs.create({
+                table_command,
+                table_number,
+                song_name,
+                artist_name,
+                status: 'pending',
+                position: initialRoundPendingMaxPosition,
+                company_id,
+                active: 1,
+                waiting_time: 60,
+                round_id: findAllCommandSongs[0]['MAX(`round_id`)'] + 1,
+                date_song: today
+              });
+  
+              io.emit('updateSong', "Nova música cadastrada")
+  
+              return res.status(201).json({
+                title: 'Música cadastrada com sucesso',
+                song
+              })
+            } else {
+              console.log('ENTROU ELSE 5')
+              const maxPosition = await Songs.findAll({
+                where: {
+                  company_id,
+                  status: ['pending'],
+                },
+                attributes: [
+                  sequelize.fn('MAX', sequelize.col('position')),
+                ],
+                raw: true
+              });
+
+              console.log(maxPosition[0]['MAX(`position`)'] + 1)
+
+              const song = await Songs.create({
+                table_command,
+                table_number,
+                song_name,
+                artist_name,
+                status: 'pending',
+                position: maxPosition[0]['MAX(`position`)'] + 1,
+                company_id,
+                active: 1,
+                waiting_time: 60,
+                round_id: findAllCommandSongs[0]['MAX(`round_id`)'] + 1,
+                date_song: today
+              });
+  
+              io.emit('updateSong', "Nova música cadastrada")
+  
+              return res.status(201).json({
+                title: 'Música cadastrada com sucesso',
+                song
+              })
+            }
           }
         }
-        // REGRA PARA QUANDO COMANDA NAO CANTOU
+        // REGRA QUANDO COMANDA NAO CANTOU
         if (!songCommand) {
           console.log('if 6')
           // Verifica se mesa ja tem musica
+          console.log('if 6 song table - ', songTable)
           if (songTable.length > 0 && songTable.status !== 'canceled' || songTable.status !== 'approved') {
             console.log('if 7')
             // ATUALIZA AS POSICOES
             for (const songs of findSongs) {
-              if (songs.position >= 2 && songs.status == 'pending') {
+              if (songs.position >= 3 && songs.status == 'pending') {
                 const newPosition = songs.position + 1
                 await Songs.update({
                   position: newPosition
@@ -371,11 +593,12 @@ module.exports = {
               song_name,
               artist_name,
               status: 'pending',
-              position: minPositionResult[0]['MIN(`position`)'] + 1,
+              position: minPositionResult[0]['MIN(`position`)'] + 2,
               company_id,
               active: 1,
               waiting_time: 60,
-              round_id: active_round_id
+              round_id: active_round_id,
+              date_song: today
             });
 
             io.emit('updateSong', "Nova música cadastrada")

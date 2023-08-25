@@ -11,6 +11,7 @@ class Songs extends Model {
       status: DataTypes.STRING,
       position: DataTypes.INTEGER,
       active: DataTypes.BOOLEAN,
+      date_song: DataTypes.STRING
     }, {
       sequelize
     })
