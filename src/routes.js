@@ -9,6 +9,7 @@ const MasterCompanyController = require('./controllers/MasterCompanyController')
 const UsersController = require('./controllers/UsersController');
 const SongsController = require('./controllers/SongsController');
 const RoundSongsController = require('./controllers/RoundSongsController');
+const ReportsController = require('./controllers/ReportsController');
 
 const auth = require('./middleware/auth');
 
@@ -57,5 +58,8 @@ routes.delete('/v1/songs/:id', auth, SongsController.delete);
 // Rodadas de música
 routes.get('/v1/rounds', auth, RoundSongsController.index);
 routes.put('/v1/rounds', auth, RoundSongsController.update);
+
+// Relatórios
+routes.get('/v1/songsreports', auth, ReportsController.songsReports);
 
 module.exports = routes;

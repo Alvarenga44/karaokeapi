@@ -329,7 +329,9 @@ module.exports = {
         });
 
         let initialPendingPosition;
+        let updateSongs = 0
         let has3position = 0
+        let songRoundId;
         let hasNoApprovedCommand = 0
         let arrayInitialPositions = [];
         let getCurrentRound = await RoundSongs.findOne({ 
@@ -386,6 +388,32 @@ module.exports = {
                 });
                 
                 if (verifySong.status == 'pending') {
+                  const songMaxRoundId = await Songs.findOne({
+                    where: {
+                      company_id,
+                      table_command
+                    },
+                    attributes: [
+                      sequelize.fn('MAX', sequelize.col('round_id')),
+                    ],
+                    raw: true
+                  });
+      
+                  const roundId = await RoundSongs.findOne({
+                    where: {
+                      company_id,
+                      id: songMaxRoundId['MAX(`round_id`)'] + 1
+                    }
+                  });
+      
+                  if (!roundId) {
+                    await RoundSongs.create({
+                      active: 0,
+                      company_id
+                    });
+                  }
+      
+                  songRoundId = songMaxRoundId['MAX(`round_id`)'] + 1
                   initialPendingPosition = verifySong.position;
                   arrayInitialPositions.push(initialPendingPosition);
                 }
@@ -396,8 +424,61 @@ module.exports = {
           } else {
             console.log('2 - ENTROU ELSE')
             has3position = 1
-            initialPendingPosition = verifySong.position;
-            arrayInitialPositions.push(initialPendingPosition);
+            const songMaxRoundId = await Songs.findOne({
+              where: {
+                company_id,
+                table_command
+              },
+              attributes: [
+                sequelize.fn('MAX', sequelize.col('round_id')),
+              ],
+              raw: true
+            });
+
+            if (!songMaxRoundId['MAX(`round_id`)']) {
+              const roundId = await RoundSongs.findOne({
+                where: {
+                  company_id,
+                  active: 1
+                }
+              });
+
+              if(roundId) {
+                songRoundId = roundId.id
+              }
+
+              const getMaxRoundPosition = await Songs.findOne({
+                where: {
+                  company_id,
+                  round_id: songRoundId
+                },
+                attributes: [
+                  sequelize.fn('MAX', sequelize.col('position')),
+                ],
+                raw: true
+              });
+
+              initialPendingPosition = getMaxRoundPosition['MAX(`position`)'] - 1;
+              updateSongs = 1
+              arrayInitialPositions.push(initialPendingPosition);
+            } else {
+              const roundId = await RoundSongs.findOne({
+                where: {
+                  company_id,
+                  id: songMaxRoundId['MAX(`round_id`)'] + 1
+                }
+              });
+  
+              if (!roundId) {
+                await RoundSongs.create({
+                  active: 0,
+                  company_id
+                });
+              }  
+              songRoundId = songMaxRoundId['MAX(`round_id`)'] + 1
+              initialPendingPosition = verifySong.position;
+              arrayInitialPositions.push(initialPendingPosition);
+            }
           }
 
           // if (verifySong.status == 'pending' && verifySong.status == 'approved') {
@@ -430,17 +511,41 @@ module.exports = {
           })
         } else {
           console.log('NOT 3 POSITION', Math.max.apply(Math, arrayInitialPositions) + 1)
+
+          if (updateSongs) {
+            for await (const verifySong of allSongs) {
+              const song = await Songs.findOne({ where: { company_id, position: verifySong.position } })
+              if (song.status == 'pending' && song.position >= initialPendingPosition + 1) {
+                const newPosition = song.position + 1
+                console.log('initialPendingPosition', initialPendingPosition)
+                console.log('LOG CREATE NEW SONG POSITIONS', {
+                  'song name': song_name,
+                  'song position': Math.max.apply(Math, arrayInitialPositions) + 1
+                });
+
+
+                console.log('LOG POSITIONS', {
+                  'song name': song.song_name,
+                  'song position': song.position,
+                  'newPosition': newPosition
+                })
+                
+                await song.update({position: newPosition}, {where: {id: song.id}});
+                await song.save();
+              }
+            }
+          }
           const song = await Songs.create({
             table_command,
             table_number,
             song_name,
             artist_name,
             status: 'pending',
-            position: Math.max.apply(Math, arrayInitialPositions) + 1, // Position 3
+            position: Math.max.apply(Math, arrayInitialPositions) + 1,
             company_id,
             active: 1,
             waiting_time: 60,
-            round_id: active_round_id,
+            round_id: songRoundId,
             date_song: today
           });
           arrayInitialPositions = []
